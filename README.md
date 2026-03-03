@@ -1,105 +1,130 @@
-# Arch Linux 空间清理指南（200G 分区实用版）
+# Arch Linux Toolbox
 
-这个目录提供了 8 个脚本，目标是：
+This repository is a personal collection of Arch Linux utilities, scripts, and templates.
+It includes disk cleanup helpers, CloudDrive auto-mount automation, Waydroid launcher tools,
+a local VS Code syntax extension for `.dae` files, and LaTeX templates.
 
-- 先看清楚空间占用
-- 优先做低风险清理
-- 在需要时再做深度清理
+## Repository Layout
 
-## 文件结构
+- `scripts/`: Arch Linux disk-space inspection and cleanup scripts
+- `clouddrive-rclone/`: auto mount/unmount CloudDrive with rclone based on endpoint reachability
+- `dae-vscode-syntax/`: local VS Code syntax extension for DAE config files
+- `waydroid-launcher/`: menu-based Waydroid session and app launcher
+- `latex/`: Chinese-oriented LaTeX templates and thesis material
 
-- `scripts/space-clean-menu.sh`: 数字菜单入口（推荐）
-- `scripts/space-check.sh`: 查看当前磁盘占用和常见可清理项
-- `scripts/space-clean-safe.sh`: 安全清理（推荐先执行）
-- `scripts/space-clean-deep.sh`: 深度清理（会更激进）
-- `scripts/space-clean-flatpak.sh`: 清理 Flatpak 未使用运行时
-- `scripts/space-clean-telegram.sh`: 清理 Telegram 缓存（不动 Spotify）
-- `scripts/space-clean-downloads.sh`: 交互清理 Downloads 大文件
-- `scripts/space-clean-mega.sh`: 可选卸载 `~/MEGA` 挂载
-
-## 快速开始
+## Quick Start
 
 ```bash
-cd /home/aerith/workspace/github/richang/archlinux
-chmod +x scripts/*.sh
+git clone git@github.com:utada1stlove/archlinux.git
+cd archlinux
 ```
 
-### 一键菜单（推荐）
+## 1) Disk Cleanup Scripts (`scripts/`)
+
+Recommended entry:
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/space-clean-menu.sh
 ```
 
-菜单项说明：
+Main scripts:
 
-- `1`: 空间检查
-- `2`: 安全清理
-- `3`: 深度清理
-- `4`: Flatpak 清理（unused/runtime）
-- `5`: Telegram 缓存清理（保留 Spotify）
-- `6`: Downloads 大文件交互清理
-- `7`: 卸载 MEGA 挂载（CloudDrive 不会触碰）
+- `space-check.sh`: inspect disk usage and common cleanup targets
+- `space-clean-safe.sh`: lower-risk cleanup (recommended regular run)
+- `space-clean-deep.sh`: aggressive cleanup (use carefully)
+- `space-clean-flatpak.sh`: remove unused Flatpak runtimes
+- `space-clean-telegram.sh`: clear Telegram cache (keeps Spotify data)
+- `space-clean-downloads.sh`: interactive cleanup for large files in `~/Downloads`
+- `space-clean-mega.sh`: optional unmount cleanup for `~/MEGA`
 
-### 1) 先检查空间
+Typical workflow:
 
 ```bash
 ./scripts/space-check.sh
-```
-
-### 2) 执行安全清理（推荐）
-
-```bash
 ./scripts/space-clean-safe.sh
-```
-
-### 3) 空间仍然紧张时，再执行深度清理
-
-```bash
+# if still low on disk:
 ./scripts/space-clean-deep.sh
 ```
 
-## 脚本会处理哪些内容
+## 2) CloudDrive rclone Auto-Mount (`clouddrive-rclone/`)
 
-### 安全清理
+This tool checks TCP reachability of a target endpoint.
 
-- 保留最近 2 个版本的 pacman 缓存，删除更旧缓存
-- 删除“已卸载软件包”遗留缓存
-- 清理 systemd journal（保留最近 14 天）
-- 清空用户垃圾桶
-- 清理 `~/.cache` 下常见缓存目录（浏览器、yay/paru 等）
-- 尝试删除孤立依赖包（orphans）
+- endpoint reachable -> mount CloudDrive
+- endpoint unreachable -> unmount CloudDrive
 
-### 深度清理（谨慎）
-
-- 仅保留最近 1 个版本的 pacman 缓存
-- 清空 pacman 全部包缓存（会导致以后重装/降级要重新下载）
-- 将日志压缩到更小体积
-- 激进清理用户缓存
-- 如果安装了 Docker，额外执行 `docker system prune -af`
-
-### 挂载盘（WebDAV/FUSE）保护
-
-- 清理脚本会自动跳过“挂载点目录”，避免误删远端文件。
-- `space-check.sh` 会显示 WebDAV/FUSE 挂载信息与 `davfs` 缓存占用。
-- 如果你的挂载点恰好放在 `~/.cache` 下，也会被自动跳过。
-- `space-clean-mega.sh` 只处理 `~/MEGA`，不会触碰 `~/CloudDrive`。
-
-## 建议的使用频率（200G 分区）
-
-- 每周：`space-check.sh`
-- 每 2~4 周：`space-clean-safe.sh`
-- 空间告急时：`space-clean-deep.sh`
-
-## 手动排查大文件（可选）
+Setup:
 
 ```bash
-sudo du -xh /var --max-depth=1 2>/dev/null | sort -h
-du -xh ~ --max-depth=1 2>/dev/null | sort -h
+cd clouddrive-rclone
+cp config.env.example config.env
+chmod +x clouddrive-autofs.sh
 ```
 
-## 注意事项
+Run:
 
-- 脚本会调用 `sudo`，请确保你的账号有 sudo 权限。
-- 清理缓存后，某些软件首次启动会重新生成缓存，属于正常现象。
-- 深度清理建议在网络良好时执行，避免后续安装软件时等待重新下载。
-- 若想单独处理 WebDAV 缓存，可先查看 `space-check.sh` 中显示的 `davfs` 缓存体积再决定是否清理。
+```bash
+./clouddrive-autofs.sh status
+./clouddrive-autofs.sh run-once
+./clouddrive-autofs.sh watch
+```
+
+Optional systemd user timer files are provided in `clouddrive-rclone/systemd/`.
+
+## 3) DAE VS Code Syntax Extension (`dae-vscode-syntax/`)
+
+A local VS Code extension for highlighting `.dae` configuration files.
+
+Install:
+
+```bash
+cd dae-vscode-syntax
+chmod +x install-linux.sh
+./install-linux.sh
+```
+
+Windows installation script is also included: `install-win.ps1`.
+
+## 4) Waydroid Launcher (`waydroid-launcher/`)
+
+Menu-based launcher for Arch Linux + Waydroid workflows:
+
+- show status
+- start/stop Waydroid session
+- open full UI
+- auto-discover installed apps and launch by package
+- quick launch path for Legado (`com.legado.app.release` preferred)
+
+Usage:
+
+```bash
+cd waydroid-launcher
+chmod +x waydroid-menu.sh
+./waydroid-menu.sh
+```
+
+## 5) LaTeX Templates (`latex/`)
+
+Template resources include:
+
+- `latex/myself/`: Chinese book/report template (`ctexbook`, XeLaTeX)
+- `latex/ultimate/`: extended personal template notes and example
+- `latex/...2016.../`: Wuhan University master thesis template set
+
+## Requirements
+
+- Arch Linux (primary target)
+- Bash
+- `sudo` (for some cleanup actions)
+- `rclone` (for CloudDrive auto-mount scripts)
+- `waydroid` (for launcher scripts)
+- VS Code (for DAE syntax extension)
+- XeLaTeX distribution such as TeX Live (for LaTeX templates)
+
+## Safety Notes
+
+- Review scripts before running on production machines.
+- Deep cleanup may remove caches that later need re-download.
+- Cleanup scripts may invoke `sudo`.
+- Keep a backup before applying aggressive cleanup or mount automation.
