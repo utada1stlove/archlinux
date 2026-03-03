@@ -1,0 +1,11 @@
+[Unit]
+Description=Run CloudDrive rclone auto mount/unmount periodically
+
+[Timer]
+OnBootSec=20s
+OnUnitActiveSec=20s
+AccuracySec=1s
+Unit=clouddrive-autofs.service
+
+[Install]
+WantedBy=timers.target

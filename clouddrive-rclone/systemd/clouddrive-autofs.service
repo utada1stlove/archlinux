@@ -1,0 +1,8 @@
+[Unit]
+Description=CloudDrive rclone auto mount/unmount (oneshot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/workspace/github/richang/clouddrive-rclone/clouddrive-autofs.sh run-once

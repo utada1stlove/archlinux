@@ -1,0 +1,35 @@
+{
+  "name": "dae-local-syntax",
+  "displayName": "DAE Local Syntax",
+  "description": "Local syntax highlighting for dae config files.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "dae",
+        "aliases": [
+          "DAE",
+          "dae"
+        ],
+        "extensions": [
+          ".dae"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "dae",
+        "scopeName": "source.dae",
+        "path": "./syntaxes/dae.tmLanguage.json"
+      }
+    ]
+  }
+}

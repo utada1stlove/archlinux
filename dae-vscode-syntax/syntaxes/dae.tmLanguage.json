@@ -1,0 +1,195 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "DAE",
+  "scopeName": "source.dae",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#block-header"
+    },
+    {
+      "include": "#group-name"
+    },
+    {
+      "include": "#route-expression"
+    },
+    {
+      "include": "#key-value"
+    },
+    {
+      "include": "#function-call"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#domain"
+    },
+    {
+      "include": "#network"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#string"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.dae",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "block-header": {
+      "patterns": [
+        {
+          "name": "entity.name.section.dae",
+          "match": "^\\s*([A-Za-z_][\\w-]*)\\s*(?=\\{)"
+        }
+      ]
+    },
+    "group-name": {
+      "patterns": [
+        {
+          "name": "entity.name.section.group.dae",
+          "match": "^\\s*(ai|brutal|fast|tiktok|tg|proxy)\\s*(?=\\{)"
+        },
+        {
+          "name": "entity.name.label.route-target.dae",
+          "match": "(?<=->\\s)\\b(ai|brutal|fast|tiktok|tg|proxy|direct|block|must_direct)\\b"
+        }
+      ]
+    },
+    "route-expression": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arrow.dae",
+          "match": "->"
+        },
+        {
+          "name": "keyword.operator.logical.dae",
+          "match": "&&|\\|\\|"
+        }
+      ]
+    },
+    "key-value": {
+      "patterns": [
+        {
+          "captures": {
+            "1": {
+              "name": "variable.other.key.dae"
+            }
+          },
+          "match": "^\\s*([A-Za-z_][\\w-]*)\\b\\s*:"
+        }
+      ]
+    },
+    "function-call": {
+      "patterns": [
+        {
+          "name": "support.function.rule.dae",
+          "match": "\\b([A-Za-z_][\\w-]*)\\s*(?=\\()"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.dae",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "keyword.control.action.dae",
+          "match": "\\b(direct|proxy|block|must|must_direct|fallback|ai|brutal|fast|tiktok|tg)\\b"
+        },
+        {
+          "name": "support.constant.reference.dae",
+          "match": "\\b(geosite|geoip|suffix|keyword|full|qname|pname|dport|l4proto|name|policy|filter)\\b"
+        }
+      ]
+    },
+    "domain": {
+      "patterns": [
+        {
+          "captures": {
+            "1": {
+              "name": "support.constant.reference.dae"
+            },
+            "2": {
+              "name": "entity.name.tag.domain-set.dae"
+            }
+          },
+          "match": "\\b(geosite|geoip):([A-Za-z0-9@!._-]+)\\b"
+        },
+        {
+          "captures": {
+            "1": {
+              "name": "support.constant.reference.dae"
+            },
+            "2": {
+              "name": "entity.name.tag.domain.dae"
+            }
+          },
+          "match": "\\b(suffix|full|keyword):([A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+)\\b"
+        },
+        {
+          "name": "entity.name.tag.domain.dae",
+          "match": "\\b(?!\\d+\\.\\d+\\.\\d+\\.\\d+\\b)(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,63}\\b"
+        }
+      ]
+    },
+    "network": {
+      "patterns": [
+        {
+          "name": "constant.numeric.ipv4.dae",
+          "match": "\\b(?:\\d{1,3}\\.){3}\\d{1,3}(?:\\/\\d{1,2})?\\b"
+        },
+        {
+          "name": "constant.numeric.port.dae",
+          "match": "(?<=:)\\b\\d{1,5}\\b"
+        },
+        {
+          "name": "constant.other.url.dae",
+          "match": "\\b[a-z][a-z0-9+.-]*://[^\\s'\\)]+"
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.duration.dae",
+          "match": "\\b\\d+(?:\\.\\d+)?(?:ms|s|m|h)\\b"
+        },
+        {
+          "name": "constant.numeric.integer.dae",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.single.dae",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.dae",
+          "match": "\\\\."
+        },
+        {
+          "name": "constant.other.url.dae",
+          "match": "\\b[a-z][a-z0-9+.-]*://[^\\s'\\)]+"
+        },
+        {
+          "name": "entity.name.tag.domain.dae",
+          "match": "\\b(?!\\d+\\.\\d+\\.\\d+\\.\\d+\\b)(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,63}\\b"
+        }
+      ]
+    }
+  }
+}
