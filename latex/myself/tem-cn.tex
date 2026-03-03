@@ -1,0 +1,186 @@
+% !TeX program = xelatex
+% !TeX encoding = UTF-8
+
+\documentclass[a4paper,12pt,twoside]{ctexbook}
+
+% 页面设置
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm,headheight=35pt,includehead]{geometry}
+\usepackage{fancyhdr}
+\usepackage{varwidth}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage{lipsum} % 用于生成示例文本，实际使用时可以移除
+\usepackage{cite}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+% section 格式设置
+\titleformat{\section}[block]{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{1.5ex plus .2ex}{1em}
+
+% subsubsection 格式设置 (示例中给出的是subsubsection, 此处保持一致)
+\titleformat{\subsubsection}[block]
+{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{0.5ex plus .1ex}{0.5em}
+
+\setcounter{secnumdepth}{4} % 章节编号深度，到 \paragraph
+\setcounter{tocdepth}{4}    % 目录显示深度，到 \paragraph
+
+% 脚注样式自定义
+\renewcommand{\thefootnote}{[~\arabic{footnote}~]}
+\renewcommand{\footnoterule}{\vspace{1mm}\hrule width 0.3\textwidth\vspace{1mm}}
+
+% 超链接设置
+\hypersetup{
+    colorlinks=true,
+    linkcolor=purple,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=black,
+    pdftitle={在此处填写您的文档标题}, % 修改为您的标题
+    pdfauthor={在此处填写您的作者名},   % 修改为您的作者
+}
+
+% --- 页眉页脚设置 ---
+\pagestyle{fancy}
+\fancyhf{} % 清空所有页眉页脚
+
+% 外侧页眉：页码
+\fancyhead[RO]{\slshape\thepage} % 奇数页，右边（外侧）
+\fancyhead[LE]{\slshape\thepage} % 偶数页，左边（外侧）
+
+% 定义一个本地的空宏用于比较
+\def\myemptytestmacro{}
+
+% 奇数页内侧页眉 (左上 LO)
+\fancyhead[LO]{%
+    \begin{varwidth}{\linewidth}
+    \raggedright
+    \slshape\nouppercase{\leftmark}% 打印章标题 (Chapter)
+
+    % 比较 \leftmark 和 \rightmark 的实际内容 (转换成字符串后比较)
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+
+    \ifx\expandedrightmark\myemptytestmacro % 如果 \rightmark 为空 (没有内容)
+        % 不打印 \rightmark
+    \else % \rightmark 不为空
+        \ifx\expandedleftmark\expandedrightmark % 如果 \leftmark 和 \rightmark 内容相同 (通常是章首页且无节)
+            % 不打印 \rightmark，避免重复
+        \else
+            % \leftmark 和 \rightmark 内容不同，且 \rightmark 不为空，则换行打印 \rightmark (Section)
+            \leavevmode\\ \small\slshape\nouppercase{\rightmark}% 使用 \leavevmode\\ 确保换行安全
+        \fi
+    \fi
+    \end{varwidth}%
+}
+
+% 偶数页内侧页眉 (右上 RE)
+\fancyhead[RE]{%
+    \begin{varwidth}{\linewidth}
+    \raggedleft % 右对齐
+    \slshape\nouppercase{\leftmark}% 打印章标题 (Chapter)
+
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+
+    \ifx\expandedrightmark\myemptytestmacro
+    \else
+        \ifx\expandedleftmark\expandedrightmark
+        \else
+            \leavevmode\\ \small\slshape\nouppercase{\rightmark}% 打印节标题 (Section)
+        \fi
+    \fi
+    \end{varwidth}%
+}
+
+% 使章首页 (plain 样式)也使用自定义页眉，但不显示分割线
+\fancypagestyle{plain}{%
+  \fancyhf{}% 清空所有页眉页脚
+  \fancyhead[RO]{\slshape\thepage}% 奇数页，外侧页码
+  \fancyhead[LE]{\slshape\thepage}% 偶数页，外侧页码
+  \fancyhead[LO]{% 奇数页，内侧内容
+    \begin{varwidth}{\linewidth}
+    \raggedright
+    \slshape\nouppercase{\leftmark}%
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+    \ifx\expandedrightmark\myemptytestmacro \else \ifx\expandedleftmark\expandedrightmark \else
+    \leavevmode\\ \small\slshape\nouppercase{\rightmark}%
+    \fi \fi
+    \end{varwidth}%
+  }%
+  \fancyhead[RE]{% 偶数页，内侧内容
+    \begin{varwidth}{\linewidth}
+    \raggedleft
+    \slshape\nouppercase{\leftmark}%
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+    \ifx\expandedrightmark\myemptytestmacro \else \ifx\expandedleftmark\expandedrightmark \else
+    \leavevmode\\ \small\slshape\nouppercase{\rightmark}%
+    \fi \fi
+    \end{varwidth}%
+  }%
+  \renewcommand{\headrulewidth}{0pt}% 无页眉分割线
+  \renewcommand{\footrulewidth}{0pt}% 无页脚分割线
+}
+% --- 页眉页脚设置结束 ---
+
+\renewcommand{\contentsname}{目录} % 将 Table of Contents 改为 目录
+
+% --- 文档元数据 ---
+\title{我的笔记} % 替换为您的标题
+\author{你的名字}   % 替换为您的名字
+\date{\today}       % 使用当前日期，或指定如 \date{2025年5月}
+
+\begin{document}
+
+\maketitle % 生成标题页
+\thispagestyle{empty} % 标题页不显示页眉页脚
+
+\clearpage
+\pagenumbering{Roman} % 目录等前置部分使用大写罗马数字页码
+\tableofcontents % 生成目录
+
+\clearpage
+\pagenumbering{arabic} % 正文部分使用阿拉伯数字页码
+\setcounter{page}{1}  % 正文页码从1开始
+
+% --- 正文内容示例 ---
+
+\part{第一部分：基础理论}
+
+\chapter{引言}
+\lipsum[1-2] % 生成一些示例文本
+
+\section{背景介绍}
+\lipsum[3]
+
+\subsection{研究现状}
+\lipsum[4]
+
+\subsubsection{国内研究}
+\lipsum[5]
+
+\paragraph{具体方法A} 这是一个段落。
+\lipsum[6]
+
+\chapter{核心概念}
+\lipsum[7-9]
+
+\section{概念一}
+\lipsum[10]
+
+\section{概念二}
+\lipsum[11]
+
+\appendix % 如果有附录
+\chapter{附录A}
+一些补充材料。
+
+% \bibliographystyle{plain} % 如果使用BibTeX，选择一个样式
+% \bibliography{your_bibliography_file} % 指定 .bib 文件名
+
+\end{document}

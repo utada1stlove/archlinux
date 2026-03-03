@@ -1,0 +1,334 @@
+% !TeX program = xelatex
+% !TeX encoding = UTF-8
+
+\documentclass[a4paper,12pt,twoside]{ctexbook} % 文档类设置为ctexbook，A4纸张，12pt字号，双面排版
+
+% --- 宏包加载 ---
+% \usepackage[选项]{宏包名} % 用于加载 LaTeX 宏包以扩展功能
+
+% 页面几何设置：定义页边距、页眉高度等
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm,headheight=39pt,includehead]{geometry}
+\usepackage{fancyhdr}      % 用于自定义页眉页脚样式
+\usepackage{varwidth}      % 用于创建可变宽度的盒子，在页眉中使长标题能自动换行
+\usepackage{hyperref}      % 生成PDF文档的超链接和书签，并设置文档属性
+\usepackage{setspace}      % 用于调整行间距 (例如 \onehalfspacing, \doublespacing)
+\usepackage{multicol}      % 用于创建多栏文本环境
+% 用于实现删除线、波浪线等效果
+\usepackage[normalem]{ulem} % 对中文支持不够
+% 用于实现对中文支持更好的、可换行的下划线
+\usepackage{xeCJKfntef}       
+\usepackage{lipsum}        % 仅用于示例文字，您的实际笔记不需要，正式文档可删除
+
+%%=======脑图设置开始=======%%
+\usepackage{tikz}          %强大的绘图宏包
+\usetikzlibrary{mindmap, trees} % 加载tikz的脑图和树状图库
+\usepackage{graphicx}      % 支持插入图片 (例如 jpg, png, pdf)
+\graphicspath{{figures/}}  % 设置图片存放的相对路径，例如 figures/myimage.png
+%%=======脑图设置结束=======%%
+
+
+%%=======参考文献设置开始=======%%
+% 使用 biblatex 管理参考文献，配合 biber 后端处理
+% 样式采用 biblatex-gb7714-2015 (符合中国国标GB/T 7714-2015)
+% 请确保你的 TeX 发行版中安装了 biblatex-gb7714-2015 宏包
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex} % style=numeric数字引用，sorting=none按引用顺序
+\addbibresource{BIBbase/myreferences.bib} % 指定您的 .bib 参考文献数据库文件名
+%%=======参考文献设置结束=======%%
+
+\usepackage{array}         % 扩展了 LaTeX 的 array 和 tabular 环境的功能
+\usepackage{xcolor}        % 提供颜色支持，可以定义和使用颜色
+\usepackage{titlesec}      % 用于自定义章节标题的格式
+\usepackage{enumitem}      % 用于更灵活地自定义列表环境 (enumerate, itemize, description)
+
+%%======= tcolorbox 的设置开始 =======%%
+% 加载 tcolorbox 宏包及其扩展库
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,skins,breakable}
+% listings: 集成 listings 代码高亮引擎
+% skins: 提供高级皮肤，比如后面用到的 bicolor
+% breakable: 让盒子可以跨页断开
+
+% 定义一个名为 "latex" 的新代码展示环境
+% --- 第一个环境：我们已经定义好的、带行号的 "latex" ---
+\newtcblisting{latex}{
+  % === 盒子的外观和布局设置 ===
+  breakable,                      % 允许跨页
+  skin=bicolor,                   % 使用“双色”皮肤，让上下两部分可以有不同背景
+  colback=gray!30!white,          % 上半部分 (代码区) 的背景色
+  colbacklower=white,             % 下半部分 (结果区) 的背景色
+  colframe=cyan!75!black,         % 边框颜色
+  listing only,                   % 布局模式：目前只显示代码部分
+  left=6mm,                       % 左边内边距
+  top=2pt, bottom=2pt,            % 上下内边距
+  fontupper=\small,               % 代码区字体设置为 \small
+  % === 传递给 listings 引擎的设置 ===
+  listing options={
+    style=tcblatex,               % 使用 tcolorbox 预定义的 tcblatex 样式
+    keywordstyle=\color{blue},    % 关键词用蓝色
+    commentstyle=\color{green!50!black}, % 注释用绿色
+    numbers=left,                 % 行号在左边
+    numberstyle=\tiny\color{red!75!black}, % 行号格式：极小、红色
+    emptylines=1,                 % 最多显示一个空行
+    escapeinside={}               % 不设置转义字符
+  }
+}
+% --- 第二个环境：我们新定义的、不带行号的 "latex-nonumber" ---
+\newtcblisting{latex-nonumber}{
+  % 你可以把所有设置都从 "latex" 环境复制过来
+  breakable,
+  skin=bicolor,
+  colback=gray!30!white,
+  listing only,
+  % 唯一的区别在这里：listing options 里面没有 numbers 和 numberstyle
+  listing options={
+    style=tcblatex,
+    keywordstyle=\color{blue}
+    % 注意：我们把 numbers 和 numberstyle 这两行删掉了！
+  }
+}
+%%======= tcolorbox 的设置结束 =======%%
+
+
+% --- 字体设置 ---
+% ctexbook 文档类在使用 XeLaTeX 编译时会自动加载 xeCJK 和 fontspec 宏包
+% 下面是明确指定希望使用的中英文字体
+% 假设您已在系统上成功安装以下字体，并且 XeLaTeX (通过 fc-list 命令) 可以找到它们
+
+% 设置中文字体
+\setCJKmainfont[BoldFont={SimHei}]{SimSun} % 文档默认中文字体(宋体), 加粗时使用黑体
+\setCJKsansfont{SimHei}       % 中文无衬线字体(黑体)
+\setCJKmonofont{FangSong}   % 中文等宽字体 (例如用于代码)，此处设置为仿宋
+\setCJKfamilyfont{kaishu}{KaiTi} % 定义一个名为 kaishu 的字体族，并将其指向 "KaiTi" (楷体) 字体
+                                % 这样可以在文中使用 \kaishu 命令切换到楷体
+\setCJKfamilyfont{songti}{SimSun} % 确保 \songti 命令使用 SimSun (宋体)
+\setCJKfamilyfont{heiti}{SimHei}   % 确保 \heiti 命令使用 SimHei (黑体)
+
+% 设置英文字体
+\setmainfont{Times New Roman}   % 默认英文字体 (衬线体 Times New Roman)
+\setsansfont{Arial}           % 默认英文无衬线字体 (Arial)
+\setmonofont{Courier New}     % 默认英文等宽字体 (Courier New)
+% --- 字体设置结束 ---
+
+% --- 章节格式设置 (使用 titlesec 宏包) ---
+% \section (节) 的格式设置
+\titleformat{\section}[block] % block 样式，标题单独一段
+  {\normalfont\Large\bfseries} % 格式：正常大小基础上的Large号字体，加粗
+  {\thesection}                % 标签：显示节编号
+  {1em}                        % 标签和标题之间的水平间距
+  {}                           % 标题前的额外代码 (此处为空)
+\titlespacing*{\section}       % \section 标题的垂直间距
+  {0pt}                        % 左边距 (星号版本表示从文本区边缘算起)
+  {1.5ex plus .2ex}            % 上边距 (1.5倍x高度，可向上伸展0.2倍x高度)
+  {1em}                        % 下边距
+
+% \subsection (小节) 的格式 (ctexbook 默认可能已经比较合适，如果需要自定义再取消注释修改)
+% \titleformat{\subsection}[block]{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+% \titlespacing*{\subsection}{0pt}{1ex plus .2ex}{0.8em}
+
+% \subsubsection (小小节) 的格式设置
+\titleformat{\subsubsection}[block]
+  {\normalfont\normalsize\bfseries} % 格式：正常大小字体，加粗
+  {\thesubsubsection}               % 标签：显示小小节编号
+  {1em}                           % 标签和标题之间的水平间距
+  {}                              % 标题前的额外代码
+\titlespacing*{\subsubsection}
+  {0pt}
+  {0.5ex plus .1ex}
+  {0.5em}
+
+% 设置章节编号的深度
+\setcounter{secnumdepth}{4} % 编号到第4级，即 \subsubsection 下一级 \paragraph (ctexbook中\paragraph默认不编号，但\subsubsection会编号)
+% 设置目录列表的深度
+\setcounter{tocdepth}{4}    % 目录显示到第4级
+
+% --- 列表样式自定义 (使用 enumitem 宏包) ---
+% 如果需要很深的列表嵌套，可能需要 \setlistdepth{}
+% \setlistdepth{7} % 例如，允许最多7层嵌套 (如果确实需要)
+
+% 自定义多级有序列表 (enumerate) 的标签格式
+\setlist[enumerate,1]{label=\arabic*．}   % 级别1: 1． 2． ...
+\setlist[enumerate,2]{label=（\arabic*）} % 级别2: （1）（2）...
+\setlist[enumerate,3]{label=\Alph*．}     % 级别3: A． B． ...
+\setlist[enumerate,4]{label=（\Alph*）}   % 级别4: （A）（B）...
+\setlist[enumerate,5]{label=\alph*．}     % 级别5: a． b． ...
+\setlist[enumerate,6]{label=（\alph*）}   % 级别6: （a）（b）...
+\setlist[enumerate,7]{label=\roman*\）}    % 级别7 (示例): i） ii）...
+% --- 列表样式结束 ---
+
+% --- 脚注样式 ---
+\renewcommand{\thefootnote}{[~\arabic{footnote}~]} % 脚注标记格式为 [ 1 ]
+\renewcommand{\footnoterule}{\vspace{1mm}\hrule width 0.3\textwidth\vspace{1mm}} % 自定义脚注分隔线的样式和长度
+% --- 脚注样式结束 ---
+
+% --- hyperref 设置 ---
+\hypersetup{
+    colorlinks=true,       % 是否将链接文字用颜色标记 (而不是边框)
+    linkcolor=purple,      % 内部普通链接颜色 (例如目录、交叉引用)
+    filecolor=magenta,     % 本地文件链接颜色 (例如 \href{run:./file.pdf}{...})
+    urlcolor=cyan,         % URL链接颜色 (例如 \url{...}, \href{http://...}{...})
+    citecolor=black,       % 参考文献引用链接颜色 (如果您使用bibtex/biblatex)
+                           % 设置为黑色使其不显眼，但仍可点击
+    pdftitle={笔记标题示例}, % PDF文档属性：标题
+    pdfauthor={您的名字},   % PDF文档属性：作者
+}
+% --- hyperref 设置结束 ---
+
+% --- 页眉页脚设置 (使用 fancyhdr 宏包) ---
+\pagestyle{fancy} % 设置页面样式为 fancy, 以启用自定义页眉页脚
+\fancyhf{}        % 清空所有预设的页眉页脚内容
+
+% 设置页码：奇数页在外侧（右侧），偶数页在外侧（左侧）
+\fancyhead[RO]{\slshape\thepage} % RO = Right Odd (奇数页的右边)
+\fancyhead[LE]{\slshape\thepage} % LE = Left Even (偶数页的左边)
+                                 % \slshape 表示斜体, \thepage 是当前页码
+
+% 定义一个本地的空宏用于后续的条件比较 (判断 \rightmark 是否为空)
+\def\myemptytestmacro{}
+
+% 核心修改：重新定义 \subsectionmark 以更新 \rightmark
+% 标准的 book.cls (ctexbook 基于此) 中 \subsectionmark 默认不做任何事
+% 我们需要它像 \sectionmark 一样更新 \rightmark，以便页眉能显示小节标题
+\makeatletter % 允许在宏定义中使用 @ 符号 (LaTeX内部命令常用)
+\renewcommand{\subsectionmark}[1]{% 定义 \subsectionmark 命令，它接收一个参数 #1 (即小节标题)
+  % \markright 命令用于设置 \rightmark 的内容
+  % \ifnum\c@secnumdepth > \@ne ... \fi 判断小节是否编号 (secnumdepth > 1)
+  % \thesubsection 是小节编号, \quad 是一个标准宽度的空格
+  % #1 是小节标题本身
+  \markright{\ifnum\c@secnumdepth > \@ne \thesubsection\quad\fi #1}%
+}
+\makeatother % 恢复 @ 符号的普通含义
+% --- \subsectionmark 定义结束 ---
+
+% 奇数页内侧页眉 (左上 LO = Left Odd)
+\fancyhead[LO]{%
+    \begin{varwidth}{\linewidth}% 使用 varwidth 使内容宽度自适应并能换行
+    \raggedright% 左对齐
+    \slshape\nouppercase{\leftmark}% 打印章标题 (\leftmark 通常由 \chaptermark 设置)
+                                  % \nouppercase 防止 fancyhdr 默认将西文转为大写
+    % 下面的逻辑判断是否需要在第二行打印 \rightmark (节或小节标题)
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}% 安全地获取 \leftmark 的内容用于比较
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}% 安全地获取 \rightmark 的内容
+    \ifx\expandedrightmark\myemptytestmacro % 如果 \rightmark 为空 (例如某些特殊页面)
+        % 则第二行不打印任何内容
+    \else % \rightmark 不为空
+        \ifx\expandedleftmark\expandedrightmark % 如果 \leftmark 和 \rightmark 内容相同
+                                               % (例如，在章首页，\markboth 可能将两者设为相同)
+            % 则第二行不打印，避免重复
+        \else
+            % \leftmark 和 \rightmark 内容不同，且 \rightmark 不为空，则换行打印 \rightmark
+            \leavevmode\\ \small\slshape\nouppercase{\rightmark}% \leavevmode确保能正确换行，\small设置小号字体
+        \fi
+    \fi
+    \end{varwidth}%
+}
+
+% 偶数页内侧页眉 (右上 RE = Right Even)
+\fancyhead[RE]{%
+    \begin{varwidth}{\linewidth}%
+    \raggedleft% 右对齐
+    \slshape\nouppercase{\leftmark}% 打印章标题
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+    \ifx\expandedrightmark\myemptytestmacro
+    \else
+        \ifx\expandedleftmark\expandedrightmark
+        \else
+            \leavevmode\\ \small\slshape\nouppercase{\rightmark}%
+        \fi
+    \fi
+    \end{varwidth}%
+}
+
+% 使章首页 (通常是 plain 页面样式) 也使用我们自定义的页眉页脚
+% 这样章首页的页眉也会显示章标题和可能的节/小节标题 (如果紧随其后)
+\fancypagestyle{plain}{%
+  \fancyhf{}% 清空 plain 样式的默认页眉页脚
+  % 页码设置同上
+  \fancyhead[RO]{\slshape\thepage}%
+  \fancyhead[LE]{\slshape\thepage}%
+  % 内侧页眉逻辑同上
+  \fancyhead[LO]{%
+    \begin{varwidth}{\linewidth}
+    \raggedright
+    \slshape\nouppercase{\leftmark}%
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+    \ifx\expandedrightmark\myemptytestmacro \else \ifx\expandedleftmark\expandedrightmark \else
+    \leavevmode\\ \small\slshape\nouppercase{\rightmark}%
+    \fi \fi
+    \end{varwidth}%
+  }%
+  \fancyhead[RE]{%
+    \begin{varwidth}{\linewidth}
+    \raggedleft
+    \slshape\nouppercase{\leftmark}%
+    \edef\expandedleftmark{\detokenize\expandafter{\leftmark}}%
+    \edef\expandedrightmark{\detokenize\expandafter{\rightmark}}%
+    \ifx\expandedrightmark\myemptytestmacro \else \ifx\expandedleftmark\expandedrightmark \else
+    \leavevmode\\ \small\slshape\nouppercase{\rightmark}%
+    \fi \fi
+    \end{varwidth}%
+  }%
+  \renewcommand{\headrulewidth}{0pt}% 章首页不显示页眉顶部的分隔线
+  \renewcommand{\footrulewidth}{0pt}% 章首页不显示页脚底部的分隔线 (如果fancyhf清空了页脚则此行意义不大)
+}
+% --- 页眉页脚设置结束 ---
+
+
+% --- 其他自定义 ---
+\renewcommand{\contentsname}{目录} % 将英文的 "Contents" 修改为中文的 "目录"
+
+% --- 自定义命令示例 ---
+% 定义 \lcite 命令，用于某种特殊引用格式
+\newcommand{\lcite}[1]{〔#1〕} 
+% 定义 \important 命令，用于突出显示文本 (楷体、小四号字)
+\newcommand{\important}[1]{{\kaishu\zihao{-4}#1}} 
+% --- 自定义命令结束 ---
+
+
+% --- 文档信息 (通常配合 \maketitle 命令在文档正文中使用) ---
+\title{我的学习笔记} % 替换为您的实际文档标题
+\author{你的名字}     % 替换为您的实际作者名 (您之前写的是“你爹”，这里修改为更通用的占位符)
+\renewcommand{\today}{\texorpdfstring{二〇一七年五月二十日}{2017-05-20}} % 将 \today 命令重新定义为您想要的特定日期
+                                               % 使用 \texorpdfstring 使PDF书签和实际文本都正确显示
+% ==============================================================================
+% 导言区结束，文档正文开始
+% ==============================================================================
+% ==============================================================================
+% 文档正文开始
+% ==============================================================================
+\begin{document}
+% 如果您需要标题页
+\title{私法}
+\author{Colin}
+\maketitle
+\thispagestyle{empty} % 标题页本身无页码
+
+% --- 使用 \frontmatter 开启前言部分 ---
+\frontmatter
+\renewcommand{\thepage}{\Roman{page}} % 如果需要，强制改为大写罗马数字
+
+% 生成目录，并将其自身加入目录
+\tableofcontents
+\addcontentsline{toc}{chapter}{目录}
+
+% 如果您有其他前言内容，比如“序言”，可以加在这里，它将不会被编号
+% \chapter{序言}
+% ...
+
+% --- 使用 \mainmatter 开启正文部分 ---
+\mainmatter
+
+\part{正文} % 您提到的正文开始部分
+
+
+\part{附录文件}
+% --- 主体内容结束后，使用 \backmatter ---
+\backmatter
+
+% --- 将参考文献放在 \backmatter 之后 ---
+\printbibliography[heading=bibintoc, title={参考书目}] % 保留您自定义的标题，并加入目录
+
+\end{document}
+
+
