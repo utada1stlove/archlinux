@@ -10,7 +10,7 @@
 ## 使用
 
 ```bash
-cd /home/aerith/workspace/github/richang/waydroid-launcher
+cd /home/aerith/archlinux/workshop/github/archlinux/waydroid-launcher
 chmod +x waydroid-menu.sh
 ./waydroid-menu.sh
 ```

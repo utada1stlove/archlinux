@@ -15,7 +15,7 @@
 ## 初始化
 
 ```bash
-cd /home/aerith/workspace/github/richang/clouddrive-rclone
+cd /home/aerith/archlinux/workshop/github/archlinux/clouddrive-rclone
 cp config.env.example config.env
 chmod +x clouddrive-autofs.sh
 ```
@@ -44,7 +44,7 @@ chmod +x clouddrive-autofs.sh
 1. 进入目录
 
 ```bash
-cd /home/aerith/workspace/github/richang/clouddrive-rclone
+cd /home/aerith/archlinux/workshop/github/archlinux/clouddrive-rclone
 ```
 
 2. 先创建测试配置（把挂载目录改成 `/tmp/CloudDrive-test`）

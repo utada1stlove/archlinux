@@ -5,4 +5,4 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=%h/workspace/github/richang/clouddrive-rclone/clouddrive-autofs.sh run-once
+ExecStart=%h/archlinux/workshop/github/archlinux/clouddrive-rclone/clouddrive-autofs.sh run-once

@@ -15,7 +15,7 @@
 - 域名匹配（`geosite:*`、`geoip:*`、`suffix:*`、裸域名等）
 
 ## 持久保存（推荐）
-1. 把本目录 `richang/dae-vscode-syntax` 放进 Git 仓库管理（GitHub/Gitea/本地私仓都可）
+1. 把本目录 `archlinux/dae-vscode-syntax` 放进 Git 仓库管理（GitHub/Gitea/本地私仓都可）
 2. 每次改语法规则后提交版本，跨机器直接拉取仓库
 
 ## 一键安装脚本（推荐）
@@ -25,13 +25,13 @@
 
 ### Windows
 ```powershell
-cd richang/dae-vscode-syntax
+cd /home/aerith/archlinux/workshop/github/archlinux/dae-vscode-syntax
 powershell -ExecutionPolicy Bypass -File .\install-win.ps1
 ```
 
 ### Linux / Arch
 ```bash
-cd richang/dae-vscode-syntax
+cd /home/aerith/archlinux/workshop/github/archlinux/dae-vscode-syntax
 chmod +x ./install-linux.sh
 ./install-linux.sh
 ```
@@ -42,7 +42,7 @@ chmod +x ./install-linux.sh
 如果你不想每台机器复制目录，可以打包后安装：
 
 ```bash
-cd richang/dae-vscode-syntax
+cd /home/aerith/archlinux/workshop/github/archlinux/dae-vscode-syntax
 npm i -g @vscode/vsce
 vsce package
 ```
