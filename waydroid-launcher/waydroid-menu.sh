@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+COLOR_RESET=$'\033[0m'
+COLOR_CYAN=$'\033[1;36m'
+COLOR_BLUE=$'\033[1;34m'
+COLOR_YELLOW=$'\033[1;33m'
+COLOR_GREEN=$'\033[1;32m'
+
+clear_screen() {
+  printf '\033[2J\033[H'
+}
+
+print_banner() {
+  cat <<EOF
+${COLOR_CYAN}__        __               _           _     _ ${COLOR_RESET}
+${COLOR_CYAN}\ \      / /_ _ _   _  __| |_ __ ___ (_) __| |${COLOR_RESET}
+${COLOR_CYAN} \ \ /\ / / _\` | | | |/ _\` | '__/ _ \| |/ _\` |${COLOR_RESET}
+${COLOR_CYAN}  \ V  V / (_| | |_| | (_| | | | (_) | | (_| |${COLOR_RESET}
+${COLOR_CYAN}   \_/\_/ \__,_|\__, |\__,_|_|  \___/|_|\__,_|${COLOR_RESET}
+${COLOR_CYAN}                |___/                         ${COLOR_RESET}
+${COLOR_BLUE}======================== Waydroid Control Panel ========================${COLOR_RESET}
+EOF
+}
+
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
     echo "Missing required command: $1"
@@ -246,30 +268,52 @@ main() {
   require_cmd waydroid
 
   while true; do
+    clear_screen
+    print_banner
     show_menu
     read -r -p "请输入数字并回车: " choice
 
     case "$choice" in
       1)
+        clear_screen
+        print_banner
+        echo -e "${COLOR_YELLOW}执行：查看状态${COLOR_RESET}"
         show_status
         ;;
       2)
+        clear_screen
+        print_banner
+        echo -e "${COLOR_YELLOW}执行：启动 Session${COLOR_RESET}"
         start_session
         ;;
       3)
+        clear_screen
+        print_banner
+        echo -e "${COLOR_YELLOW}执行：启动 Full UI${COLOR_RESET}"
         show_full_ui
         ;;
       4)
+        clear_screen
+        print_banner
+        echo -e "${COLOR_YELLOW}执行：检测并启动应用${COLOR_RESET}"
         launch_app_menu
         ;;
       5)
+        clear_screen
+        print_banner
+        echo -e "${COLOR_YELLOW}执行：停止 Session${COLOR_RESET}"
         stop_session
         ;;
       6)
+        clear_screen
+        print_banner
+        echo -e "${COLOR_YELLOW}执行：快速启动 Legado${COLOR_RESET}"
         quick_launch_legado
         ;;
       0)
-        echo "Bye."
+        clear_screen
+        print_banner
+        echo -e "${COLOR_GREEN}Bye.${COLOR_RESET}"
         exit 0
         ;;
       *)

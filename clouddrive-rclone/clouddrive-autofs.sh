@@ -17,6 +17,27 @@ SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 SYSTEMD_SERVICE_NAME="clouddrive-autofs.service"
 SYSTEMD_TIMER_NAME="clouddrive-autofs.timer"
 
+COLOR_RESET=$'\033[0m'
+COLOR_CYAN=$'\033[1;36m'
+COLOR_BLUE=$'\033[1;34m'
+COLOR_YELLOW=$'\033[1;33m'
+COLOR_GREEN=$'\033[1;32m'
+
+clear_screen() {
+  printf '\033[2J\033[H'
+}
+
+panel_print_banner() {
+  cat <<EOF
+${COLOR_CYAN}  ____ _                 _ ____       _            ${COLOR_RESET}
+${COLOR_CYAN} / ___| | ___  _   _  __| |  _ \ _ __(_)_   _____  ${COLOR_RESET}
+${COLOR_CYAN}| |   | |/ _ \| | | |/ _\` | |_) | '__| \ \ / / _ \ ${COLOR_RESET}
+${COLOR_CYAN}| |___| | (_) | |_| | (_| |  _ <| |  | |\ V /  __/ ${COLOR_RESET}
+${COLOR_CYAN} \____|_|\___/ \__,_|\__,_|_| \_\_|  |_| \_/ \___| ${COLOR_RESET}
+${COLOR_BLUE}======================= CloudDrive Control Panel =======================${COLOR_RESET}
+EOF
+}
+
 if [[ -f "$CONFIG_FILE" ]]; then
   # shellcheck disable=SC1090
   source "$CONFIG_FILE"
@@ -316,14 +337,21 @@ panel() {
   local rc=0
 
   while true; do
+    clear_screen
+    panel_print_banner
     panel_print_menu
     read -r -p "Choose [0-11]: " choice || break
 
     if [[ "$choice" == "0" ]]; then
-      echo "Bye."
+      clear_screen
+      panel_print_banner
+      echo -e "${COLOR_GREEN}Bye.${COLOR_RESET}"
       break
     fi
 
+    clear_screen
+    panel_print_banner
+    echo -e "${COLOR_YELLOW}Running action: ${choice}${COLOR_RESET}"
     set +e
     panel_run_action "$choice"
     rc=$?

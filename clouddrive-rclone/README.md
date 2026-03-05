@@ -55,6 +55,8 @@ chmod +x clouddrive-manager.sh
 - 查看最近 rclone 日志
 - 查看最近 systemd 日志
 
+面板已支持每轮清屏并显示彩色 banner。
+
 ## 验证步骤（非常白话）
 
 下面分两种情况：你现在不在家，和你回家后。
