@@ -18,6 +18,7 @@
 cd /home/aerith/archlinux/workshop/github/archlinux/clouddrive-rclone
 cp config.env.example config.env
 chmod +x clouddrive-autofs.sh
+chmod +x clouddrive-manager.sh
 ```
 
 先确认 `config.env` 里的：
@@ -31,7 +32,28 @@ chmod +x clouddrive-autofs.sh
 ./clouddrive-autofs.sh status
 ./clouddrive-autofs.sh run-once
 ./clouddrive-autofs.sh watch
+./clouddrive-autofs.sh panel
+./clouddrive-manager.sh
 ```
+
+## 命令行面板（你说的这种）
+
+直接启动交互菜单：
+
+```bash
+./clouddrive-autofs.sh panel
+# 或者直接用管理入口脚本（推荐）
+./clouddrive-manager.sh
+```
+
+菜单里包含：
+
+- 挂载状态查询
+- 一次自动检查（run-once）
+- 强制挂载/卸载
+- systemd 安装/启用/停用/卸载/状态
+- 查看最近 rclone 日志
+- 查看最近 systemd 日志
 
 ## 验证步骤（非常白话）
 
@@ -119,19 +141,35 @@ findmnt -T ~/CloudDrive || echo "当前未挂载"
 
 ## systemd 自动运行（推荐）
 
+现在脚本已经内置 systemd 管理命令，不用再手动 `cp`：
+
+```bash
+./clouddrive-autofs.sh systemd-install
+./clouddrive-autofs.sh systemd-enable
+```
+
+查看状态：
+
+```bash
+./clouddrive-autofs.sh systemd-status
+journalctl --user -u clouddrive-autofs.service -f --no-pager
+```
+
+停用/删除（你说的“删除 systemd 内容”）：
+
+```bash
+./clouddrive-autofs.sh systemd-disable
+./clouddrive-autofs.sh systemd-uninstall
+```
+
+如果你仍想手动管理，也可以继续用传统命令：
+
 ```bash
 mkdir -p ~/.config/systemd/user
 cp systemd/clouddrive-autofs.service ~/.config/systemd/user/
 cp systemd/clouddrive-autofs.timer ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now clouddrive-autofs.timer
-```
-
-查看状态：
-
-```bash
-systemctl --user status clouddrive-autofs.timer
-journalctl --user -u clouddrive-autofs.service -f
 ```
 
 ## 说明
