@@ -1,0 +1,3 @@
+# Main Caddy entrypoint.
+# Keep shortcut routes in a single imported file for easier management.
+import /etc/caddy/shortcuts.caddy

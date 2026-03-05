@@ -12,12 +12,18 @@ a local VS Code syntax extension for `.dae` files, and LaTeX templates.
 - `waydroid-launcher/`: menu-based Waydroid session and app launcher
 - `vnstat-arch/`: generate vnStat traffic images locally, then move to OneDrive after Insync starts
 - `latex/`: Chinese-oriented LaTeX templates and thesis material
+- `caddy-shortcuts/`: local domain shortcuts with Caddy (single imported routes file)
+- `toolbox-panel.sh`: master interactive launcher for all major menu scripts
+- `install-toolbox-command.sh`: install `toolbox` command into `~/.local/bin`
 
 ## Quick Start
 
 ```bash
 git clone git@github.com:utada1stlove/archlinux.git
 cd archlinux
+chmod +x toolbox-panel.sh
+./toolbox-panel.sh
+./install-toolbox-command.sh
 ```
 
 ## 1) Disk Cleanup Scripts (`scripts/`)
@@ -135,6 +141,59 @@ Template resources include:
 - `latex/myself/`: Chinese book/report template (`ctexbook`, XeLaTeX)
 - `latex/ultimate/`: extended personal template notes and example
 - `latex/...2016.../`: Wuhan University master thesis template set
+
+## 7) Caddy Local Shortcuts (`caddy-shortcuts/`)
+
+Manage local shortcut domains with one imported routes file.
+
+- Main config template: `caddy-shortcuts/Caddyfile.main`
+- Single routes file: `caddy-shortcuts/shortcuts.caddy`
+- Install script: `caddy-shortcuts/install.sh`
+- Interactive panel: `caddy-shortcuts/shortcut-manager.sh`
+
+Quick setup:
+
+```bash
+cd caddy-shortcuts
+./install.sh
+./shortcut-manager.sh
+```
+
+Note: `./install.sh` keeps existing `/etc/caddy/shortcuts.caddy` by default.
+Use `./install.sh --reset-routes` only when you explicitly want template reset.
+
+Default examples:
+
+- `http://clouddrive.lan` -> reverse proxy `192.168.100.1:19798`
+- `http://news.economist` -> redirect to `https://www.economist.com`
+
+## 8) Master Panel (`toolbox-panel.sh`)
+
+One entrypoint for major interactive scripts:
+
+- Caddy shortcut panel
+- CloudDrive panel
+- disk cleanup menu
+- Waydroid menu
+
+Run:
+
+```bash
+./toolbox-panel.sh
+```
+
+Install `toolbox` command (recommended):
+
+```bash
+./install-toolbox-command.sh
+toolbox
+```
+
+If copied `toolbox-panel.sh` to another location:
+
+```bash
+ARCHLINUX_TOOLBOX_HOME=/path/to/archlinux ./toolbox-panel.sh
+```
 
 ## Requirements
 

@@ -1,0 +1,10 @@
+# All local shortcut routes live in this single file.
+# Add more entries here, then reload Caddy.
+
+http://clouddrive.lan {
+	reverse_proxy 192.168.100.1:19798
+}
+
+http://news.economist {
+	redir https://www.economist.com 302
+}
