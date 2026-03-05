@@ -5,4 +5,6 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+# Keep rclone --daemon process alive after this oneshot exits.
+KillMode=none
 ExecStart=%h/archlinux/workshop/github/archlinux/clouddrive-rclone/clouddrive-autofs.sh run-once
