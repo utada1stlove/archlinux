@@ -10,6 +10,7 @@ a local VS Code syntax extension for `.dae` files, and LaTeX templates.
 - `clouddrive-rclone/`: auto mount/unmount CloudDrive with rclone based on endpoint reachability
 - `dae-vscode-syntax/`: local VS Code syntax extension for DAE config files
 - `waydroid-launcher/`: menu-based Waydroid session and app launcher
+- `vnstat-arch/`: generate vnStat traffic images locally, then move to OneDrive after Insync starts
 - `latex/`: Chinese-oriented LaTeX templates and thesis material
 
 ## Quick Start
@@ -104,7 +105,30 @@ chmod +x waydroid-menu.sh
 ./waydroid-menu.sh
 ```
 
-## 5) LaTeX Templates (`latex/`)
+## 5) vnStat Cache + Insync Move (`vnstat-arch/`)
+
+This workflow is split into two scripts:
+
+- Script A (`vnstat-generate-cache.sh`): run once after boot, generate `month/day/hour` images into `~/.cache/vnstat-arch/`
+- Script B (`vnstat-move-after-insync.sh`): wait until `insync` process is running, then move cached images to OneDrive if target filename does not already exist
+
+Systemd user unit files are included in `vnstat-arch/systemd/`.
+
+Quick setup:
+
+```bash
+chmod +x vnstat-arch/*.sh
+mkdir -p ~/.config/systemd/user
+cp vnstat-arch/systemd/*.service ~/.config/systemd/user/
+cp vnstat-arch/systemd/*.timer ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now vnstat-arch-generate.timer
+systemctl --user enable --now vnstat-arch-move-after-insync.timer
+```
+
+Details: see `vnstat-arch/README.md`.
+
+## 6) LaTeX Templates (`latex/`)
 
 Template resources include:
 
@@ -119,6 +143,8 @@ Template resources include:
 - `sudo` (for some cleanup actions)
 - `rclone` (for CloudDrive auto-mount scripts)
 - `waydroid` (for launcher scripts)
+- `vnstat`/`vnstati` (for vnStat chart generation)
+- `insync` (for delayed OneDrive move step)
 - VS Code (for DAE syntax extension)
 - XeLaTeX distribution such as TeX Live (for LaTeX templates)
 

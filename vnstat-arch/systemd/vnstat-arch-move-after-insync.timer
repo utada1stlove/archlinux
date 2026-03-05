@@ -1,0 +1,10 @@
+[Unit]
+Description=Run vnStat cache mover once after boot
+
+[Timer]
+OnBootSec=90s
+AccuracySec=1s
+Unit=vnstat-arch-move-after-insync.service
+
+[Install]
+WantedBy=timers.target

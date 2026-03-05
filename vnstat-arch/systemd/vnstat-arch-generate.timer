@@ -1,0 +1,10 @@
+[Unit]
+Description=Run vnStat cache image generation once after boot
+
+[Timer]
+OnBootSec=45s
+AccuracySec=1s
+Unit=vnstat-arch-generate.service
+
+[Install]
+WantedBy=timers.target

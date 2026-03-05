@@ -1,0 +1,8 @@
+[Unit]
+Description=Generate vnStat images into local cache
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/archlinux/workshop/github/archlinux/vnstat-arch/vnstat-generate-cache.sh

@@ -1,0 +1,7 @@
+[Unit]
+Description=Move cached vnStat images to Insync OneDrive after Insync starts
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/archlinux/workshop/github/archlinux/vnstat-arch/vnstat-move-after-insync.sh
