@@ -10,6 +10,7 @@ a local VS Code syntax extension for `.dae` files, and LaTeX templates.
 - `clouddrive-rclone/`: auto mount/unmount CloudDrive with rclone based on endpoint reachability
 - `dae-vscode-syntax/`: local VS Code syntax extension for DAE config files
 - `waydroid-launcher/`: menu-based Waydroid session and app launcher
+- `adguard-cli-panel/`: menu-based AdGuard CLI control panel for Arch Linux
 - `vnstat-arch/`: generate vnStat traffic images locally, then move to OneDrive after Insync starts
 - `latex/`: Chinese-oriented LaTeX templates and thesis material
 - `caddy-shortcuts/`: local domain shortcuts with Caddy (single imported routes file)
@@ -134,7 +135,33 @@ systemctl --user enable --now vnstat-arch-move-after-insync.timer
 
 Details: see `vnstat-arch/README.md`.
 
-## 6) LaTeX Templates (`latex/`)
+## 6) AdGuard CLI Panel (`adguard-cli-panel/`)
+
+Interactive panel for `adguard-cli` on Arch Linux:
+
+- service control (`start/stop/restart/status`)
+- config management
+- custom user rules via `user.txt` (element hiding / exception / network blocking / import)
+- log viewer for `app.log / proxy.log / access.log`, including recent `BLOCKED` entries and live follow
+- filters / DNS filters / userscripts
+- certificate generation and trust import helper
+- license, update, import/export, speed test
+
+Usage:
+
+```bash
+cd adguard-cli-panel
+chmod +x adguard-panel.sh
+./adguard-panel.sh
+```
+
+If `adguard-cli` is not in your `PATH`:
+
+```bash
+ADGUARD_BIN=/path/to/adguard-cli ./adguard-panel.sh
+```
+
+## 7) LaTeX Templates (`latex/`)
 
 Template resources include:
 
@@ -142,7 +169,7 @@ Template resources include:
 - `latex/ultimate/`: extended personal template notes and example
 - `latex/...2016.../`: Wuhan University master thesis template set
 
-## 7) Caddy Local Shortcuts (`caddy-shortcuts/`)
+## 8) Caddy Local Shortcuts (`caddy-shortcuts/`)
 
 Manage local shortcut domains with one imported routes file.
 
@@ -167,7 +194,7 @@ Default examples:
 - `http://clouddrive.lan` -> reverse proxy `192.168.100.1:19798`
 - `http://news.economist` -> redirect to `https://www.economist.com`
 
-## 8) Master Panel (`toolbox-panel.sh`)
+## 9) Master Panel (`toolbox-panel.sh`)
 
 One entrypoint for major interactive scripts:
 
@@ -175,6 +202,7 @@ One entrypoint for major interactive scripts:
 - CloudDrive panel
 - disk cleanup menu
 - Waydroid menu
+- AdGuard CLI panel
 
 Run:
 

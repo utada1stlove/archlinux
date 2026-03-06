@@ -95,6 +95,7 @@ print_menu() {
 2) CloudDrive panel
 3) Disk cleanup menu
 4) Waydroid menu
+5) AdGuard CLI panel
 0) Exit
 MENU
 }
@@ -107,13 +108,14 @@ panel() {
 		print_banner
 		print_menu
 		echo
-		read -r -p "Choose [0-4]: " choice || break
+		read -r -p "Choose [0-5]: " choice || break
 
 		case "$choice" in
 		1) run_child_script "Caddy Shortcut Panel" "caddy-shortcuts/shortcut-manager.sh" ;;
 		2) run_child_script "CloudDrive Panel" "clouddrive-rclone/clouddrive-manager.sh" ;;
 		3) run_child_script "Disk Cleanup Menu" "scripts/space-clean-menu.sh" ;;
 		4) run_child_script "Waydroid Menu" "waydroid-launcher/waydroid-menu.sh" ;;
+		5) run_child_script "AdGuard CLI Panel" "adguard-cli-panel/adguard-panel.sh" ;;
 		0)
 			clear_screen
 			print_banner
