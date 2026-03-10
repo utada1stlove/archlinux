@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f7f8;
+      --surface:   #ffffff;
+      --border:    #e2e2e6;
+      --text:      #18181b;
+      --muted:     #71717a;
+      --accent:    #3b82f6;
+      --accent-h:  #2563eb;
+      --danger:    #ef4444;
+      --done-text: #a1a1aa;
+      --radius:    8px;
+      --shadow:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2.5rem 1rem 4rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    /* ── Header ── */
+    header {
+      margin-bottom: 1.75rem;
+    }
+
+    .title-label {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .35rem;
+    }
+
+    .date-heading {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+    }
+
+    /* ── Add task ── */
+    .add-row {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .add-row input {
+      flex: 1;
+      padding: .55rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: .95rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .add-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .add-row input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: .55rem 1rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:active { opacity: .85; }
+
+    /* ── Task list ── */
+    #task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .6rem .5rem;
+      border-radius: 6px;
+      transition: background .12s;
+    }
+
+    .task-item:hover { background: var(--bg); }
+
+    /* Custom checkbox */
+    .task-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 1.1rem;
+      height: 1.1rem;
+      min-width: 1.1rem;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .15s, background .15s;
+    }
+
+    .task-item input[type="checkbox"]:hover {
+      border-color: var(--accent);
+    }
+
+    .task-item input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .task-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 2px; top: -1px;
+      width: 6px; height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .task-label {
+      flex: 1;
+      font-size: .95rem;
+      line-height: 1.4;
+      cursor: pointer;
+      transition: color .15s, text-decoration .15s;
+      word-break: break-word;
+    }
+
+    .task-item.done .task-label {
+      color: var(--done-text);
+      text-decoration: line-through;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: .2rem .35rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity .15s, color .15s;
+    }
+
+    .task-item:hover .delete-btn { opacity: 1; }
+    .delete-btn:hover { color: var(--danger); }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: .9rem;
+      padding: 1.5rem 0;
+    }
+
+    /* ── Footer bar ── */
+    .footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .task-count {
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .btn-export {
+      background: var(--text);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .btn-export:hover { background: #3f3f46; }
+    .btn-export:active { opacity: .85; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 1.75rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--text);
+      color: #fff;
+      padding: .6rem 1.1rem;
+      border-radius: 6px;
+      font-size: .88rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,.18);
+      opacity: 0;
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.error { background: var(--danger); }
+
+    /* ── Save indicator ── */
+    #save-indicator {
+      font-size: .78rem;
+      color: var(--muted);
+      min-width: 4rem;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-label">Todo List</div>
+      <h1 class="date-heading" id="date-heading">—</h1>
+    </header>
+
+    <div class="card">
+      <div class="add-row">
+        <input type="text" id="new-task-input" placeholder="Add a new task…" autocomplete="off">
+        <button class="btn btn-primary" onclick="addTask()">Add</button>
+      </div>
+
+      <ul id="task-list"></ul>
+
+      <div class="footer-bar">
+        <span class="task-count" id="task-count">0 tasks</span>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span id="save-indicator"></span>
+          <button class="btn btn-export" onclick="exportLatex()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1a.5.5 0 0 1 .5.5v7.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 9.293V1.5A.5.5 0 0 1 8 1z"/>
+              <path d="M2 12.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            Export to LaTeX
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let tasks = [];
+    let saveTimer = null;
+
+    // ── Init ──────────────────────────────────────────────
+
+    async function init() {
+      const res = await fetch('/api/todos/today');
+      const data = await res.json();
+
+      // Render date heading
+      const date = new Date(data.date + 'T00:00:00');
+      const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('date-heading').textContent =
+        date.toLocaleDateString('en-US', opts);
+      document.title = 'Todo · ' + date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      tasks = data.tasks || [];
+      renderTasks();
+    }
+
+    // ── Render ────────────────────────────────────────────
+
+    function renderTasks() {
+      const list = document.getElementById('task-list');
+      list.innerHTML = '';
+
+      if (tasks.length === 0) {
+        list.innerHTML = '<li class="empty-state">No tasks yet — add one above.</li>';
+      } else {
+        tasks.forEach((task, i) => {
+          const li = document.createElement('li');
+          li.className = 'task-item' + (task.done ? ' done' : '');
+          li.dataset.index = i;
+
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = task.done;
+          cb.addEventListener('change', () => toggleTask(i));
+
+          const label = document.createElement('span');
+          label.className = 'task-label';
+          label.textContent = task.text;
+          label.addEventListener('click', () => toggleTask(i));
+
+          const del = document.createElement('button');
+          del.className = 'delete-btn';
+          del.title = 'Delete task';
+          del.innerHTML = '&times;';
+          del.addEventListener('click', () => deleteTask(i));
+
+          li.appendChild(cb);
+          li.appendChild(label);
+          li.appendChild(del);
+          list.appendChild(li);
+        });
+      }
+
+      const done = tasks.filter(t => t.done).length;
+      const total = tasks.length;
+      document.getElementById('task-count').textContent =
+        total === 0 ? '0 tasks' :
+        done === total ? `All ${total} done ✓` :
+        `${done} / ${total} done`;
+    }
+
+    // ── Task actions ──────────────────────────────────────
+
+    function addTask() {
+      const input = document.getElementById('new-task-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.push({ text, done: false });
+      input.value = '';
+      renderTasks();
+      scheduleSave();
+      input.focus();
+    }
+
+    function toggleTask(index) {
+      tasks[index].done = !tasks[index].done;
+      renderTasks();
+      scheduleSave();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      renderTasks();
+      scheduleSave();
+    }
+
+    // ── Save ──────────────────────────────────────────────
+
+    function scheduleSave() {
+      setSaveIndicator('Unsaved…');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveTasks, 600);
+    }
+
+    async function saveTasks() {
+      try {
+        await fetch('/api/todos/today', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tasks }),
+        });
+        setSaveIndicator('Saved');
+        setTimeout(() => setSaveIndicator(''), 2000);
+      } catch {
+        setSaveIndicator('Save failed');
+      }
+    }
+
+    function setSaveIndicator(text) {
+      document.getElementById('save-indicator').textContent = text;
+    }
+
+    // ── Export ────────────────────────────────────────────
+
+    async function exportLatex() {
+      // Ensure latest data is saved first
+      clearTimeout(saveTimer);
+      await saveTasks();
+
+      try {
+        const res = await fetch('/api/export', { method: 'POST' });
+        const data = await res.json();
+        showToast('Exported → ' + data.file);
+      } catch {
+        showToast('Export failed', true);
+      }
+    }
+
+    // ── Toast ─────────────────────────────────────────────
+
+    let toastTimer = null;
+
+    function showToast(msg, isError = false) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'show' + (isError ? ' error' : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+    }
+
+    // ── Keyboard ──────────────────────────────────────────
+
+    document.getElementById('new-task-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addTask();
+    });
+
+    // ── Start ─────────────────────────────────────────────
+
+    init();
+  </script>
+</body>
+</html>
