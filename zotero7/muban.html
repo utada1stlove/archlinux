@@ -1,0 +1,122 @@
+# This template is specifically for importing/sharing, using better 
+# notes 'import from clipboard': copy the content and
+# goto Zotero menu bar, click Edit->New Template from Clipboard.  
+# Do not copy-paste this to better notes template editor directly.
+name: "[item]note"
+content: |-
+  <html>
+  <hr/>
+  <table border="1">
+  
+  <h2 style="color:  #E65100; background-color:  #FFF8E1;">(${topItem.getField("date")}) ${topItem.getField("title")}</h2>
+  
+  <tr>
+  <td><b>期刊: <b style="color:#FF0000">${topItem.getField('publicationTitle')}</b></b>（发表日期: <b>${topItem.getField("date")}</b>）<br><b>作者:</b> ${topItem.getCreators().map((v)=>v.firstName+" "+v.lastName).join("; ")}</td>
+  </tr>
+  
+  <tr>
+  <td><b>摘要: </b><i>${topItem.getField('abstractNote')}</i></td>
+  </tr>
+
+
+  <tr>
+  <td><b>摘要翻译: </b>
+  <!-- 要提前安装Zotero PDF Translate插件，否则摘要翻译找不到 -->
+  <i>${topItem.getField('abstractTranslation')}</i></td>
+  </tr>
+
+  
+  <tr>
+  <td><b>期刊分区: </b>
+  <!-- 引用了zotero style插件的标签 -->
+  
+  ${{
+  let space = " ㅤㅤ ㅤㅤ"
+  return Array.prototype.map.call(
+  	Zotero.ZoteroStyle.api.renderCell(topItem, "publicationTags").childNodes,
+  	e => {
+  		e.innerText =  space + e.innerText + space;
+  		return e.outerHTML
+  	}
+  	).join(space)
+  }}$
+  
+  
+  </td>
+  </tr>
+  
+  <tr>
+  <td><b>原文PDF链接: </b>
+  <a href=zotero://open-pdf/0_${Zotero.Items.get(topItem.getAttachments()).filter((i) => i.isPDFAttachment())[0].key}>
+                  ${Zotero.Items.get(topItem.getAttachments()).filter((i)=> i.isPDFAttachment())[0].getFilename()}
+      </a>
+  </td>
+  </tr>
+  
+  <tr>
+  <td><b>笔记创建日期: </b>${new Date().toLocaleString()}</td>
+  </tr>
+  
+  </table>
+  <section>
+      <h2 id="background-purpose-conclusion">1️⃣ 文章基本框架</h2>
+      
+      <h3>背景</h3>
+  <blockquote>
+          概要说明研究所处领域的现状及其重要性。
+      </blockquote>
+      <h3>目的</h3>
+  <blockquote>
+          明确列出文章旨在解决的科学问题和研究目标。
+      </blockquote>
+      <h3>结论</h3>
+  <blockquote>
+  简明扼要地归纳出文章的主要发现与结论。
+  </blockquote>
+  
+  </section>
+  <br>
+  
+  <section>
+      <h2 id="results-discussion">2️⃣ 结果与讨论</h2>
+      <blockquote>
+          对于文章中出现的关键图表及其说明、关键机理解释以及文章的重点内容，进行详细记录和解读。
+      </blockquote>
+      <h3>数据以及数据来源</h3>
+      <h3>方法</h3>
+      <h3>结论</h3>
+  </section>
+  <br>
+  
+  <section>
+      <h2 id="thoughts">3️⃣ 文章亮点思考</h2>
+      <blockquote>
+          <p>1、本文有什么优缺点？你是否对某些内容产生了疑问？<br>
+          2、你是否认为某些研究方式可以改进，如何改进？<br>
+          3、这篇文章好在哪里，只有当自己理解这篇文章好在哪里，为什么能发在顶刊上，那么你也就基本理解了全篇文章的基本内容。</p>
+      </blockquote>
+  
+  </section>
+  
+  <br>
+  <section>
+      <h2 id="learning-by-example-125">4️⃣ 借鉴学习（125）</h2>
+      <blockquote>
+          <p>“125”原则</p>
+      </blockquote>
+      <h3>1个思路</h3>
+      <blockquote>
+          <p>该文章可能为自己未来研究带来的新思路，不论是实验方法，还是研究思路上。</p>
+      </blockquote>
+      <h3>2个绘图</h3>
+      <blockquote>
+          <p>选取并分析文章中设计精良的图表，学习其形式和色彩搭配。</p>
+      </blockquote>
+      <h3>5个句式</h3>
+      <blockquote>
+          <p>提炼并记录文章中的五个优秀句式，并尝试在未来的写作中模仿使用。</p>
+      </blockquote>
+  </section>
+  
+  
+  </html>

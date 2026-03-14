@@ -1,0 +1,75 @@
+# This template is specifically for importing/sharing, using better
+# notes 'import from clipboard': copy the content and
+# goto Zotero menu bar, click Edit->New Template from Clipboard.
+# Do not copy-paste this to better notes template editor directly.
+name: "[item]新闻速读"
+content: |-
+  <html>
+  <hr/>
+  <table border="1" style="width:100%; border-collapse:collapse;">
+
+  <h2 style="color:#0D47A1; background-color:#E3F2FD; padding:8px; margin:0;">
+  📰 ${topItem.getField("title")}
+  </h2>
+
+  <tr>
+  <td style="background-color:#f5f5f5; padding:6px;">
+  <b>来源：</b><b style="color:#B71C1C">${topItem.getField('publicationTitle') || topItem.getField('websiteTitle') || topItem.getField('blogTitle') || '未知来源'}</b>
+  &nbsp;｜&nbsp;
+  <b>日期：</b>${topItem.getField("date")}
+  &nbsp;｜&nbsp;
+  <b>记者/作者：</b>${topItem.getCreators().map((v) => (v.firstName ? v.firstName + ' ' : '') + v.lastName).filter(Boolean).join('; ') || '未署名'}
+  </td>
+  </tr>
+
+  <tr>
+  <td style="padding:6px;">
+  <b>原文链接：</b><a href="${topItem.getField('url')}">${topItem.getField('url') || '无'}</a>
+  &nbsp;｜&nbsp;
+  <b>笔记时间：</b>${new Date().toLocaleString('zh-CN')}
+  </td>
+  </tr>
+
+  </table>
+
+  <section>
+  <h2 style="color:#0D47A1;">⚡ 一句话概括</h2>
+  <blockquote>
+  <!-- 谁 / 做了什么 / 结果如何 —— 控制在2句以内 -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#0D47A1;">🗂 5W1H 要素</h2>
+  <table border="1" style="width:100%; border-collapse:collapse;">
+  <tr><td style="width:70px; background:#E3F2FD; padding:5px; text-align:center;"><b>Who</b></td><td style="padding:5px;">涉及的主要人物 / 机构：</td></tr>
+  <tr><td style="background:#E3F2FD; padding:5px; text-align:center;"><b>What</b></td><td style="padding:5px;">发生了什么：</td></tr>
+  <tr><td style="background:#E3F2FD; padding:5px; text-align:center;"><b>When</b></td><td style="padding:5px;">关键时间节点：</td></tr>
+  <tr><td style="background:#E3F2FD; padding:5px; text-align:center;"><b>Where</b></td><td style="padding:5px;">地点 / 影响范围：</td></tr>
+  <tr><td style="background:#E3F2FD; padding:5px; text-align:center;"><b>Why</b></td><td style="padding:5px;">背景 / 原因：</td></tr>
+  <tr><td style="background:#E3F2FD; padding:5px; text-align:center;"><b>How</b></td><td style="padding:5px;">如何发生 / 各方如何回应：</td></tr>
+  </table>
+  </section>
+
+  <section>
+  <h2 style="color:#0D47A1;">📌 关键数据 & 引用</h2>
+  <blockquote>
+  <!-- 文中重要数字、有力引言，可直接粘贴原文 -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#0D47A1;">🔗 关联议题 / 追踪标签</h2>
+  <blockquote>
+  <!-- 这条新闻属于哪个正在追踪的议题？如：#美联储加息 #中美贸易 #AI监管 -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#0D47A1;">✍️ 随记 & 疑问</h2>
+  <blockquote>
+  <!-- 读后感、存疑之处、值得深挖的方向 -->
+  </blockquote>
+  </section>
+
+  </html>

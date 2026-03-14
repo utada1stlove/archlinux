@@ -1,0 +1,131 @@
+# This template is specifically for importing/sharing, using better
+# notes 'import from clipboard': copy the content and
+# goto Zotero menu bar, click Edit->New Template from Clipboard.
+# Do not copy-paste this to better notes template editor directly.
+name: "[item]新闻深析"
+content: |-
+  <html>
+  <hr/>
+  <table border="1" style="width:100%; border-collapse:collapse;">
+
+  <h2 style="color:#4A148C; background-color:#F3E5F5; padding:8px; margin:0;">
+  🔍 ${topItem.getField("title")}
+  </h2>
+
+  <tr>
+  <td style="background-color:#f5f5f5; padding:6px;">
+  <b>来源：</b><b style="color:#B71C1C">${topItem.getField('publicationTitle') || topItem.getField('websiteTitle') || topItem.getField('blogTitle') || '未知来源'}</b>
+  &nbsp;｜&nbsp;
+  <b>日期：</b>${topItem.getField("date")}
+  &nbsp;｜&nbsp;
+  <b>记者/作者：</b>${topItem.getCreators().map((v) => (v.firstName ? v.firstName + ' ' : '') + v.lastName).filter(Boolean).join('; ') || '未署名'}
+  </td>
+  </tr>
+
+  <tr>
+  <td style="padding:6px;">
+  <b>栏目/版面：</b>${topItem.getField('section') || '—'}
+  &nbsp;｜&nbsp;
+  <b>原文：</b><a href="${topItem.getField('url')}">${topItem.getField('url') || '无'}</a>
+  &nbsp;｜&nbsp;
+  <b>笔记时间：</b>${new Date().toLocaleString('zh-CN')}
+  </td>
+  </tr>
+
+  <tr>
+  <td style="padding:6px;">
+  <b>摘要/导言：</b><i>${topItem.getField('abstractNote') || '（无摘要，请手动补充）'}</i>
+  </td>
+  </tr>
+
+  </table>
+
+  <section>
+  <h2 style="color:#4A148C;">1️⃣ 核心论点</h2>
+  <blockquote>
+  <!-- 文章/报道的核心主张是什么？作者想说明什么？ -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#4A148C;">2️⃣ 背景与来龙去脉</h2>
+  <h3>历史背景</h3>
+  <blockquote>
+  <!-- 这件事的前因：之前发生了什么，导致了今天的局面？ -->
+  </blockquote>
+  <h3>当前触发因素</h3>
+  <blockquote>
+  <!-- 为什么偏偏是现在？近期有什么直接导火索？ -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#4A148C;">3️⃣ 各方立场</h2>
+  <table border="1" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="width:120px; background:#F3E5F5; padding:5px; text-align:center;"><b>行为方</b></td>
+    <td style="width:50%; background:#F3E5F5; padding:5px; text-align:center;"><b>立场 / 行动</b></td>
+    <td style="background:#F3E5F5; padding:5px; text-align:center;"><b>利益诉求 / 动机</b></td>
+  </tr>
+  <tr><td style="padding:5px;">（如：美联储）</td><td style="padding:5px;"></td><td style="padding:5px;"></td></tr>
+  <tr><td style="padding:5px;">（如：市场）</td><td style="padding:5px;"></td><td style="padding:5px;"></td></tr>
+  <tr><td style="padding:5px;">（如：政府）</td><td style="padding:5px;"></td><td style="padding:5px;"></td></tr>
+  </table>
+  </section>
+
+  <section>
+  <h2 style="color:#4A148C;">4️⃣ 关键数据 & 证据</h2>
+  <blockquote>
+  <!-- 文中支撑论点的核心数据、图表、研究、案例 -->
+  <!-- 格式建议：【数据】+ 来源 + 说明其意义 -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#4A148C;">5️⃣ 影响与走向</h2>
+  <h3>短期影响</h3>
+  <blockquote>
+  <!-- 接下来几周/几个月可能发生什么？ -->
+  </blockquote>
+  <h3>中长期走向</h3>
+  <blockquote>
+  <!-- 这件事对更大趋势意味着什么？结构性变化还是周期性波动？ -->
+  </blockquote>
+  <h3>不确定性 & 风险</h3>
+  <blockquote>
+  <!-- 还有哪些变量不明朗？哪些假设可能被推翻？ -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#4A148C;">6️⃣ 写作素材库</h2>
+  <h3>值得保留的句式 / 表达</h3>
+  <blockquote>
+  <!-- 摘录原文中精彩的措辞、比喻、句式结构，注明原文语言 -->
+  </blockquote>
+  <h3>可引用的数据 & 案例</h3>
+  <blockquote>
+  <!-- 未来写作可能用到的数据点、典型案例 -->
+  </blockquote>
+  <h3>延伸阅读线索</h3>
+  <blockquote>
+  <!-- 文中提到但未展开的概念、人物、事件，值得进一步查阅 -->
+  </blockquote>
+  </section>
+
+  <section>
+  <h2 style="color:#4A148C;">7️⃣ 深度思考</h2>
+  <blockquote>
+  <p>
+  1. 这篇报道的叙事角度有何倾向？有没有被忽略的视角？<br>
+  2. 这件事与我正在追踪的哪些议题相关联？<br>
+  3. 如果我来写这篇分析，我会补充或质疑什么？
+  </p>
+  </blockquote>
+  <h3>关联议题标签</h3>
+  <blockquote>
+  <!-- #美元走势 #全球供应链 #地缘政治 等 -->
+  </blockquote>
+  </section>
+
+  </html>
