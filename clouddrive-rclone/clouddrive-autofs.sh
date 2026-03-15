@@ -1,10 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="${CLOUDRIVE_CONFIG:-$SCRIPT_DIR/config.env}"
+resolve_script_path() {
+  local src="${BASH_SOURCE[0]}"
+  local dir=""
 
-# Defaults (can be overridden in config.env)
+  while [[ -L "$src" ]]; do
+    dir="$(cd -P "$(dirname "$src")" && pwd)"
+    src="$(readlink "$src")"
+    [[ "$src" != /* ]] && src="$dir/$src"
+  done
+
+  printf '%s\n' "$(cd -P "$(dirname "$src")" && pwd)/$(basename "$src")"
+}
+
+SCRIPT_PATH="$(resolve_script_path)"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+PROFILE_DIR="$SCRIPT_DIR/profiles"
+DEFAULT_PROFILE_NAME="clouddrive"
+DEFAULT_CONFIG_FILE="$SCRIPT_DIR/config.env"
+CONFIG_FILE="${CLOUDRIVE_CONFIG:-}"
+ACTIVE_PROFILE="${CLOUDRIVE_PROFILE:-$DEFAULT_PROFILE_NAME}"
+ACTIVE_PROFILE_SOURCE="default"
+CONFIG_FILE_FOUND="NO"
+CONFIG_READY="YES"
+CONFIG_ERROR=""
+
+# Defaults (can be overridden in config files)
 TARGET_HOST="192.168.100.1"
 TARGET_PORT="19798"
 RCLONE_REMOTE="cloudrive:"
@@ -14,8 +36,9 @@ CONNECT_TIMEOUT_SEC="2"
 LOG_FILE="$HOME/.cache/rclone-clouddrive.log"
 RCLONE_EXTRA_ARGS="--vfs-cache-mode full --dir-cache-time 10m"
 SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
-SYSTEMD_SERVICE_NAME="clouddrive-autofs.service"
-SYSTEMD_TIMER_NAME="clouddrive-autofs.timer"
+SYSTEMD_UNIT_PREFIX="clouddrive-autofs"
+SYSTEMD_SERVICE_NAME=""
+SYSTEMD_TIMER_NAME=""
 
 COLOR_RESET=$'\033[0m'
 COLOR_CYAN=$'\033[1;36m'
@@ -27,21 +50,93 @@ clear_screen() {
   printf '\033[2J\033[H'
 }
 
-panel_print_banner() {
-  cat <<EOF
-${COLOR_CYAN}  ____ _                 _ ____       _            ${COLOR_RESET}
-${COLOR_CYAN} / ___| | ___  _   _  __| |  _ \ _ __(_)_   _____  ${COLOR_RESET}
-${COLOR_CYAN}| |   | |/ _ \| | | |/ _\` | |_) | '__| \ \ / / _ \ ${COLOR_RESET}
-${COLOR_CYAN}| |___| | (_) | |_| | (_| |  _ <| |  | |\ V /  __/ ${COLOR_RESET}
-${COLOR_CYAN} \____|_|\___/ \__,_|\__,_|_| \_\_|  |_| \_/ \___| ${COLOR_RESET}
-${COLOR_BLUE}======================= CloudDrive Control Panel =======================${COLOR_RESET}
-EOF
+profile_slug() {
+  local value="${1:-$DEFAULT_PROFILE_NAME}"
+  local slug="${value,,}"
+  slug="${slug//[^[:alnum:]._-]/-}"
+  slug="${slug#-}"
+  slug="${slug%-}"
+  printf '%s\n' "${slug:-$DEFAULT_PROFILE_NAME}"
 }
 
-if [[ -f "$CONFIG_FILE" ]]; then
-  # shellcheck disable=SC1090
-  source "$CONFIG_FILE"
-fi
+profile_config_path() {
+  local profile="${1:-$DEFAULT_PROFILE_NAME}"
+
+  if [[ "$profile" == "$DEFAULT_PROFILE_NAME" || "$profile" == "default" ]]; then
+    printf '%s\n' "$DEFAULT_CONFIG_FILE"
+  else
+    printf '%s\n' "$PROFILE_DIR/$profile.env"
+  fi
+}
+
+discover_profiles() {
+  local file=""
+  local name=""
+
+  printf '%s\n' "$DEFAULT_PROFILE_NAME"
+  if [[ -d "$PROFILE_DIR" ]]; then
+    while IFS= read -r -d '' file; do
+      name="$(basename "$file" .env)"
+      [[ -n "$name" && "$name" != "$DEFAULT_PROFILE_NAME" && "$name" != "default" ]] && printf '%s\n' "$name"
+    done < <(find "$PROFILE_DIR" -maxdepth 1 -type f -name '*.env' -print0 | sort -z)
+  fi
+}
+
+resolve_active_config() {
+  local requested_profile="${CLOUDRIVE_PROFILE:-}"
+  local slug=""
+
+  if [[ -n "$CONFIG_FILE" ]]; then
+    ACTIVE_PROFILE_SOURCE="custom-config"
+    if [[ -n "$requested_profile" ]]; then
+      ACTIVE_PROFILE="$requested_profile"
+    else
+      ACTIVE_PROFILE="$(basename "$CONFIG_FILE")"
+      ACTIVE_PROFILE="${ACTIVE_PROFILE%.env}"
+      [[ -z "$ACTIVE_PROFILE" ]] && ACTIVE_PROFILE="custom"
+    fi
+  elif [[ -n "$requested_profile" && "$requested_profile" != "$DEFAULT_PROFILE_NAME" && "$requested_profile" != "default" ]]; then
+    ACTIVE_PROFILE="$requested_profile"
+    ACTIVE_PROFILE_SOURCE="profile"
+    CONFIG_FILE="$(profile_config_path "$ACTIVE_PROFILE")"
+  else
+    ACTIVE_PROFILE="$DEFAULT_PROFILE_NAME"
+    ACTIVE_PROFILE_SOURCE="default"
+    CONFIG_FILE="$DEFAULT_CONFIG_FILE"
+  fi
+
+  if [[ -f "$CONFIG_FILE" ]]; then
+    CONFIG_FILE_FOUND="YES"
+    # shellcheck disable=SC1090
+    source "$CONFIG_FILE"
+  elif [[ "$ACTIVE_PROFILE_SOURCE" != "default" ]]; then
+    CONFIG_READY="NO"
+    CONFIG_ERROR="Config file not found for profile '${ACTIVE_PROFILE}': ${CONFIG_FILE}"
+  fi
+
+  slug="$(profile_slug "$ACTIVE_PROFILE")"
+  if [[ "$slug" == "$(profile_slug "$DEFAULT_PROFILE_NAME")" ]]; then
+    SYSTEMD_UNIT_PREFIX="clouddrive-autofs"
+  else
+    SYSTEMD_UNIT_PREFIX="clouddrive-autofs-$slug"
+  fi
+  SYSTEMD_SERVICE_NAME="${SYSTEMD_UNIT_PREFIX}.service"
+  SYSTEMD_TIMER_NAME="${SYSTEMD_UNIT_PREFIX}.timer"
+}
+
+panel_print_banner() {
+  cat <<EOF
+${COLOR_CYAN} __        __   _     ____     ___     __     __ ${COLOR_RESET}
+${COLOR_CYAN} \ \      / /__| |__ |  _ \   / \ \   / /__ _/ _|${COLOR_RESET}
+${COLOR_CYAN}  \ \ /\ / / _ \ '_ \| | | | / _ \ \ / / _ \ |_ ${COLOR_RESET}
+${COLOR_CYAN}   \ V  V /  __/ |_) | |_| |/ ___ \ V /  __/  _|${COLOR_RESET}
+${COLOR_CYAN}    \_/\_/ \___|_.__/|____//_/   \_\_/ \___|_|  ${COLOR_RESET}
+${COLOR_BLUE}========================= WebDAV Mount Panel ==========================${COLOR_RESET}
+EOF
+  echo -e "${COLOR_YELLOW}Profile:${COLOR_RESET} ${ACTIVE_PROFILE}    ${COLOR_YELLOW}Config:${COLOR_RESET} ${CONFIG_FILE}"
+}
+
+resolve_active_config
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -50,8 +145,41 @@ require_cmd() {
   fi
 }
 
+require_config_ready() {
+  if [[ "$CONFIG_READY" != "YES" ]]; then
+    echo "$CONFIG_ERROR" >&2
+    return 1
+  fi
+}
+
 log() {
   printf "[%s] %s\n" "$(date '+%F %T')" "$1"
+}
+
+profile_summary() {
+  local profile="$1"
+  local file=""
+
+  file="$(profile_config_path "$profile")"
+  if [[ ! -f "$file" ]]; then
+    if [[ "$profile" == "$DEFAULT_PROFILE_NAME" ]]; then
+      printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$profile" "$file" "$RCLONE_REMOTE" "$MOUNT_POINT" "$TARGET_HOST" "$TARGET_PORT"
+    fi
+    return 0
+  fi
+
+  (
+    set +u
+    # shellcheck disable=SC1090
+    source "$file"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "$profile" \
+      "$file" \
+      "${RCLONE_REMOTE:-}" \
+      "${MOUNT_POINT:-}" \
+      "${TARGET_HOST:-}" \
+      "${TARGET_PORT:-}"
+  )
 }
 
 mount_fstype() {
@@ -94,9 +222,11 @@ is_endpoint_reachable() {
   return 1
 }
 
-mount_cloudrive() {
+mount_webdav() {
   local -a extra
   local -a cmd
+
+  require_config_ready
 
   if is_mounted; then
     log "Already mounted: $MOUNT_POINT"
@@ -108,11 +238,17 @@ mount_cloudrive() {
 
   read -r -a extra <<<"$RCLONE_EXTRA_ARGS"
   cmd=(
-    rclone mount "$RCLONE_REMOTE" "$MOUNT_POINT"
+    rclone
+    mount
+    "$RCLONE_REMOTE"
+    "$MOUNT_POINT"
     --daemon
-    --daemon-timeout 20s
-    --log-file "$LOG_FILE"
-    --log-level INFO
+    --daemon-timeout
+    20s
+    --log-file
+    "$LOG_FILE"
+    --log-level
+    INFO
   )
 
   if [[ "${#extra[@]}" -gt 0 ]]; then
@@ -130,7 +266,9 @@ mount_cloudrive() {
   fi
 }
 
-unmount_cloudrive() {
+unmount_webdav() {
+  require_config_ready
+
   if ! is_mounted; then
     log "Already unmounted: $MOUNT_POINT"
     return 0
@@ -158,6 +296,8 @@ status() {
   local mounted="NO"
   local fs=""
 
+  require_config_ready
+
   if is_endpoint_reachable; then
     endpoint="UP"
   fi
@@ -167,10 +307,16 @@ status() {
     fs="$(mount_fstype)"
   fi
 
+  echo "PROFILE=$ACTIVE_PROFILE"
+  echo "PROFILE_SOURCE=$ACTIVE_PROFILE_SOURCE"
+  echo "CONFIG_FILE=$CONFIG_FILE"
+  echo "CONFIG_FILE_FOUND=$CONFIG_FILE_FOUND"
   echo "TARGET_HOST=$TARGET_HOST"
   echo "TARGET_PORT=$TARGET_PORT"
   echo "RCLONE_REMOTE=$RCLONE_REMOTE"
   echo "MOUNT_POINT=$MOUNT_POINT"
+  echo "SYSTEMD_SERVICE_NAME=$SYSTEMD_SERVICE_NAME"
+  echo "SYSTEMD_TIMER_NAME=$SYSTEMD_TIMER_NAME"
   echo "ENDPOINT=$endpoint"
   echo "MOUNTED=$mounted"
   if [[ -n "$fs" ]]; then
@@ -179,16 +325,19 @@ status() {
 }
 
 reconcile_once() {
+  require_config_ready
+
   if is_endpoint_reachable; then
     log "Endpoint ${TARGET_HOST}:${TARGET_PORT} reachable."
-    mount_cloudrive
+    mount_webdav
   else
     log "Endpoint ${TARGET_HOST}:${TARGET_PORT} unreachable."
-    unmount_cloudrive || true
+    unmount_webdav || true
   fi
 }
 
 watch_loop() {
+  require_config_ready
   log "Starting watch loop, interval=${CHECK_INTERVAL_SEC}s"
   while true; do
     reconcile_once
@@ -197,30 +346,62 @@ watch_loop() {
 }
 
 systemd_install() {
-  local service_src="$SCRIPT_DIR/systemd/$SYSTEMD_SERVICE_NAME"
-  local timer_src="$SCRIPT_DIR/systemd/$SYSTEMD_TIMER_NAME"
+  local service_dst="$SYSTEMD_USER_DIR/$SYSTEMD_SERVICE_NAME"
+  local timer_dst="$SYSTEMD_USER_DIR/$SYSTEMD_TIMER_NAME"
 
+  require_config_ready
   require_cmd systemctl
 
-  if [[ ! -f "$service_src" || ! -f "$timer_src" ]]; then
-    log "Missing systemd templates under $SCRIPT_DIR/systemd"
-    return 1
+  mkdir -p "$SYSTEMD_USER_DIR"
+
+  cat > "$service_dst" <<EOF
+[Unit]
+Description=WebDAV rclone auto mount/unmount (${ACTIVE_PROFILE})
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+KillMode=none
+EOF
+
+  if [[ "$ACTIVE_PROFILE_SOURCE" == "custom-config" ]]; then
+    printf 'Environment=CLOUDRIVE_CONFIG=%s\n' "$CONFIG_FILE" >> "$service_dst"
+  else
+    printf 'Environment=CLOUDRIVE_PROFILE=%s\n' "$ACTIVE_PROFILE" >> "$service_dst"
   fi
 
-  mkdir -p "$SYSTEMD_USER_DIR"
-  cp "$service_src" "$SYSTEMD_USER_DIR/$SYSTEMD_SERVICE_NAME"
-  cp "$timer_src" "$SYSTEMD_USER_DIR/$SYSTEMD_TIMER_NAME"
+  cat >> "$service_dst" <<EOF
+ExecStart=$SCRIPT_PATH run-once
+EOF
+
+  cat > "$timer_dst" <<EOF
+[Unit]
+Description=Run WebDAV rclone auto mount/unmount periodically (${ACTIVE_PROFILE})
+
+[Timer]
+OnBootSec=${CHECK_INTERVAL_SEC}s
+OnUnitActiveSec=${CHECK_INTERVAL_SEC}s
+AccuracySec=1s
+Unit=$SYSTEMD_SERVICE_NAME
+
+[Install]
+WantedBy=timers.target
+EOF
+
   systemctl --user daemon-reload
-  log "Installed systemd user units to $SYSTEMD_USER_DIR"
+  log "Installed systemd user units to $SYSTEMD_USER_DIR for profile ${ACTIVE_PROFILE}"
 }
 
 systemd_enable() {
+  require_config_ready
   require_cmd systemctl
   systemctl --user enable --now "$SYSTEMD_TIMER_NAME"
   log "Enabled and started: $SYSTEMD_TIMER_NAME"
 }
 
 systemd_disable() {
+  require_config_ready
   require_cmd systemctl
   if systemctl --user disable --now "$SYSTEMD_TIMER_NAME" >/dev/null 2>&1; then
     log "Disabled and stopped: $SYSTEMD_TIMER_NAME"
@@ -235,6 +416,7 @@ systemd_uninstall() {
   local service_dst="$SYSTEMD_USER_DIR/$SYSTEMD_SERVICE_NAME"
   local timer_dst="$SYSTEMD_USER_DIR/$SYSTEMD_TIMER_NAME"
 
+  require_config_ready
   require_cmd systemctl
   systemd_disable
 
@@ -263,6 +445,7 @@ systemd_status() {
   local service_file="NO"
   local timer_file="NO"
 
+  require_config_ready
   require_cmd systemctl
 
   if [[ -f "$SYSTEMD_USER_DIR/$SYSTEMD_SERVICE_NAME" ]]; then
@@ -282,10 +465,41 @@ systemd_status() {
   echo "TIMER_ACTIVE=${active:-not-found}"
 }
 
+list_profiles() {
+  local mode="${1:-pretty}"
+  local -a profiles=()
+  local profile=""
+  local line=""
+
+  while IFS= read -r profile; do
+    profiles+=("$profile")
+  done < <(discover_profiles)
+
+  if [[ "$mode" == "--plain" ]]; then
+    printf '%s\n' "${profiles[@]}"
+    return 0
+  fi
+
+  for profile in "${profiles[@]}"; do
+    line="$(profile_summary "$profile")"
+    if [[ -z "$line" ]]; then
+      continue
+    fi
+
+    IFS=$'\t' read -r profile _ remote mount host port <<<"$line"
+    printf '%-12s remote=%-18s mount=%-28s endpoint=%s:%s\n' \
+      "$profile" \
+      "${remote:-<unset>}" \
+      "${mount:-<unset>}" \
+      "${host:-<unset>}" \
+      "${port:-<unset>}"
+  done
+}
+
 panel_print_menu() {
   cat <<MENU
 
-======== CloudDrive CLI Panel ========
+========= WebDAV CLI Panel =========
 1) Show status
 2) Run auto reconcile once
 3) Force mount
@@ -297,8 +511,9 @@ panel_print_menu() {
 9) systemd status
 10) Show last 50 lines of rclone log
 11) Show last 50 lines of systemd service log
+12) List available profiles
 0) Exit
-=====================================
+===================================
 MENU
 }
 
@@ -307,8 +522,8 @@ panel_run_action() {
   case "$choice" in
     1) status ;;
     2) require_cmd rclone; reconcile_once ;;
-    3) require_cmd rclone; mount_cloudrive ;;
-    4) require_cmd rclone; unmount_cloudrive ;;
+    3) require_cmd rclone; mount_webdav ;;
+    4) require_cmd rclone; unmount_webdav ;;
     5) systemd_install ;;
     6) systemd_enable ;;
     7) systemd_disable ;;
@@ -325,6 +540,9 @@ panel_run_action() {
       require_cmd journalctl
       journalctl --user -u "$SYSTEMD_SERVICE_NAME" -n 50 --no-pager
       ;;
+    12)
+      list_profiles
+      ;;
     *)
       echo "Unknown option: $choice"
       return 1
@@ -340,7 +558,7 @@ panel() {
     clear_screen
     panel_print_banner
     panel_print_menu
-    read -r -p "Choose [0-11]: " choice || break
+    read -r -p "Choose [0-12]: " choice || break
 
     if [[ "$choice" == "0" ]]; then
       clear_screen
@@ -367,20 +585,25 @@ panel() {
 
 usage() {
   cat <<USAGE
-Usage: $(basename "$0") [status|run-once|watch|mount|unmount|systemd-install|systemd-enable|systemd-disable|systemd-uninstall|systemd-status|panel]
+Usage: $(basename "$0") [status|run-once|watch|mount|unmount|systemd-install|systemd-enable|systemd-disable|systemd-uninstall|systemd-status|profiles|panel]
 
 Commands:
-  status    Show endpoint and mount status
-  run-once  Check endpoint once, then mount/unmount accordingly (default)
-  watch     Keep checking every CHECK_INTERVAL_SEC
-  mount     Force mount now
-  unmount   Force unmount now
-  systemd-install    Install user service/timer to ~/.config/systemd/user
-  systemd-enable     Enable and start timer
-  systemd-disable    Disable and stop timer
-  systemd-uninstall  Disable timer and remove unit files
-  systemd-status     Show timer enabled/active status
-  panel              Interactive command-line control panel
+  status            Show endpoint and mount status
+  run-once          Check endpoint once, then mount/unmount accordingly (default)
+  watch             Keep checking every CHECK_INTERVAL_SEC
+  mount             Force mount now
+  unmount           Force unmount now
+  systemd-install   Install user service/timer to ~/.config/systemd/user
+  systemd-enable    Enable and start timer
+  systemd-disable   Disable and stop timer
+  systemd-uninstall Disable timer and remove unit files
+  systemd-status    Show timer enabled/active status
+  profiles          List available config profiles
+  panel             Interactive command-line control panel
+
+Environment:
+  CLOUDRIVE_PROFILE Use named profile from $PROFILE_DIR/<name>.env
+  CLOUDRIVE_CONFIG  Use a specific config file path
 USAGE
 }
 
@@ -401,11 +624,10 @@ main() {
       ;;
     mount)
       require_cmd rclone
-      mount_cloudrive
+      mount_webdav
       ;;
     unmount)
-      require_cmd rclone
-      unmount_cloudrive
+      unmount_webdav
       ;;
     systemd-install)
       systemd_install
@@ -421,6 +643,9 @@ main() {
       ;;
     systemd-status)
       systemd_status
+      ;;
+    profiles)
+      list_profiles "${2:-pretty}"
       ;;
     panel)
       panel

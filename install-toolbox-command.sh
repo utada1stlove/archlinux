@@ -23,6 +23,7 @@ ln -sfn "${SOURCE_SCRIPT}" "${TARGET_LINK}"
 chmod +x "${SOURCE_SCRIPT}"
 
 echo "Installed command: toolbox -> ${SOURCE_SCRIPT}"
+echo "If you move this repository later, rerun this installer to refresh the link."
 
 case ":${PATH}:" in
 *":${BIN_DIR}:"*)

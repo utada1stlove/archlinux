@@ -1,6 +1,6 @@
-# CloudDrive Rclone Auto Mount
+# WebDAV Rclone Auto Mount
 
-根据 `192.168.100.1:19798` 的 TCP 可达性自动挂载/卸载 `CloudDrive`。
+根据目标 `host:port` 的 TCP 可达性自动挂载/卸载对应的 rclone WebDAV remote。
 
 - 连通 (`UP`) -> 自动挂载
 - 不连通 (`DOWN`) -> 自动卸载
@@ -21,10 +21,27 @@ chmod +x clouddrive-autofs.sh
 chmod +x clouddrive-manager.sh
 ```
 
+默认 `config.env` 作为 `clouddrive` 配置。
+
 先确认 `config.env` 里的：
 
 - `RCLONE_REMOTE`（你的 remote 名称）
 - `MOUNT_POINT`（默认 `~/CloudDrive`）
+
+如果你要新增 `openlist`，推荐直接这样建：
+
+```bash
+mkdir -p profiles
+cp config.env.example profiles/openlist.env
+```
+
+然后改 `profiles/openlist.env` 里的：
+
+- `TARGET_HOST`
+- `TARGET_PORT`
+- `RCLONE_REMOTE`
+- `MOUNT_POINT`
+- `LOG_FILE`
 
 ## 手动运行
 
@@ -34,6 +51,7 @@ chmod +x clouddrive-manager.sh
 ./clouddrive-autofs.sh watch
 ./clouddrive-autofs.sh panel
 ./clouddrive-manager.sh
+CLOUDRIVE_PROFILE=openlist ./clouddrive-autofs.sh panel
 ```
 
 ## 命令行面板（你说的这种）
@@ -45,6 +63,12 @@ chmod +x clouddrive-manager.sh
 # 或者直接用管理入口脚本（推荐）
 ./clouddrive-manager.sh
 ```
+
+现在 `./clouddrive-manager.sh` 会先进入 `WebDAV` 选择层：
+
+- `clouddrive`
+- `openlist`
+- Other WebDAV profiles
 
 菜单里包含：
 
@@ -150,11 +174,20 @@ findmnt -T ~/CloudDrive || echo "当前未挂载"
 ./clouddrive-autofs.sh systemd-enable
 ```
 
-查看状态：
+查看默认 `clouddrive` 状态：
 
 ```bash
 ./clouddrive-autofs.sh systemd-status
 journalctl --user -u clouddrive-autofs.service -f --no-pager
+```
+
+如果是 `openlist`：
+
+```bash
+CLOUDRIVE_PROFILE=openlist ./clouddrive-autofs.sh systemd-install
+CLOUDRIVE_PROFILE=openlist ./clouddrive-autofs.sh systemd-enable
+CLOUDRIVE_PROFILE=openlist ./clouddrive-autofs.sh systemd-status
+journalctl --user -u clouddrive-autofs-openlist.service -f --no-pager
 ```
 
 停用/删除（你说的“删除 systemd 内容”）：
@@ -178,3 +211,4 @@ systemctl --user enable --now clouddrive-autofs.timer
 
 - 这是 TCP 检测（不是 ICMP ping）。因为你给的是 `ip:port`。
 - 挂载目录已挂载但不是 rclone 类型时，脚本会跳过卸载，防止误操作。
+- `toolbox` 和 `clouddrive-manager.sh` 现在都能通过软链接正确找到真实仓库路径；如果你移动了仓库，记得重新跑一次 `install-toolbox-command.sh` 刷新 `toolbox` 链接。

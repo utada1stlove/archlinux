@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+resolve_script_dir() {
+	local src="${BASH_SOURCE[0]}"
+	local dir=""
+
+	while [[ -L "$src" ]]; do
+		dir="$(cd -P "$(dirname "$src")" && pwd)"
+		src="$(readlink "$src")"
+		[[ "$src" != /* ]] && src="$dir/$src"
+	done
+
+	cd -P "$(dirname "$src")" && pwd
+}
+
+SCRIPT_DIR="$(resolve_script_dir)"
 FALLBACK_REPO="/home/aerith/archlinux/workshop/github/archlinux"
 REPO_ROOT="${ARCHLINUX_TOOLBOX_HOME:-}"
 
@@ -92,7 +105,7 @@ run_child_script() {
 print_menu() {
 	cat <<'MENU'
 1) Caddy shortcut panel
-2) CloudDrive panel
+2) WebDAV panel
 3) Disk cleanup menu
 4) Waydroid menu
 5) AdGuard CLI panel
@@ -112,7 +125,7 @@ panel() {
 
 		case "$choice" in
 		1) run_child_script "Caddy Shortcut Panel" "caddy-shortcuts/shortcut-manager.sh" ;;
-		2) run_child_script "CloudDrive Panel" "clouddrive-rclone/clouddrive-manager.sh" ;;
+		2) run_child_script "WebDAV Panel" "clouddrive-rclone/clouddrive-manager.sh" ;;
 		3) run_child_script "Disk Cleanup Menu" "scripts/space-clean-menu.sh" ;;
 		4) run_child_script "Waydroid Menu" "waydroid-launcher/waydroid-menu.sh" ;;
 		5) run_child_script "AdGuard CLI Panel" "adguard-cli-panel/adguard-panel.sh" ;;

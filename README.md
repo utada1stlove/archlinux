@@ -55,11 +55,11 @@ Typical workflow:
 ./scripts/space-clean-deep.sh
 ```
 
-## 2) CloudDrive rclone Auto-Mount (`clouddrive-rclone/`)
+## 2) WebDAV rclone Auto-Mount (`clouddrive-rclone/`)
 
-This tool checks TCP reachability of a target endpoint.
+This tool checks TCP reachability of a target endpoint and then mounts/unmounts a WebDAV-style rclone remote.
 
-- endpoint reachable -> mount CloudDrive
+- endpoint reachable -> mount remote
 - endpoint unreachable -> unmount CloudDrive
 
 Setup:
@@ -76,9 +76,11 @@ Run:
 ./clouddrive-autofs.sh status
 ./clouddrive-autofs.sh run-once
 ./clouddrive-autofs.sh watch
+./clouddrive-manager.sh
 ```
 
 Optional systemd user timer files are provided in `clouddrive-rclone/systemd/`.
+The manager now opens a `WebDAV` submenu with `clouddrive` and `openlist`, and extra profiles can live under `clouddrive-rclone/profiles/*.env`.
 
 ## 3) DAE VS Code Syntax Extension (`dae-vscode-syntax/`)
 
@@ -199,7 +201,7 @@ Default examples:
 One entrypoint for major interactive scripts:
 
 - Caddy shortcut panel
-- CloudDrive panel
+- WebDAV panel
 - disk cleanup menu
 - Waydroid menu
 - AdGuard CLI panel
